@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>황미란 Hwang Miran</title>
-<meta name="description" content="황미란. 미술·디자인 교육자, 디자이너, 연구자. 수업 설계, 교육용 웹앱, 교과서 집필, 데이터·AI 리터러시와 미술교육 연구.">
+<meta name="description" content="황미란. 미술·디자인 교육자, 디자이너, 연구자. 가르친 것, 만든 것, 쓴 것, 강의한 것, 연구한 것의 기록.">
 <meta property="og:title" content="황미란 Hwang Miran">
 <meta property="og:description" content="미술과 디자인을 가르치고, 수업에 필요한 도구를 만들고, 그 수업을 연구합니다.">
 <meta property="og:type" content="website">
@@ -22,12 +22,14 @@
   <div class="wrap grid">
     <a class="who" href="#top">황미란 <span class="label">Hwang Miran</span></a>
     <nav id="nav" aria-label="구역">
-      <a href="#work">Work</a>
-      <a href="#archive">Archive</a>
+      <a href="#works">Works</a>
+      <a href="#teach">Teach</a>
+      <a href="#make">Make</a>
+      <a href="#write">Write</a>
+      <a href="#speak">Speak</a>
       <a href="#research">Research</a>
-      <a href="#teaching">Teaching</a>
+      <a href="#life">CV</a>
       <a href="#images">Images</a>
-      <a href="#cv">CV</a>
       <a href="#contact">Contact</a>
     </nav>
     <div class="tools">
@@ -48,52 +50,23 @@
         <dl class="now" id="now"></dl>
       </div>
     </div>
+    <div class="map grid">
+      <p class="label" style="grid-column:1/span 2">How to read</p>
+      <p class="how" id="how"></p>
+      <ol class="toc" id="toc"></ol>
+    </div>
   </section>
 
-  <section class="sec wrap" id="work">
+  <section class="sec wrap" id="works">
     <div class="sec-head grid">
-      <span class="idx label">Selected Work</span>
-      <h2>작업</h2>
-      <p>수업 설계, 정보 디자인, 교과서, 작품. 각 작업은 하나의 질문에서 시작했습니다.</p>
+      <span class="idx label">Selected Works</span>
+      <h2>선별 작업</h2>
+      <p>수업 설계, 정보 디자인, 교과서, 작품 가운데 열 가지. 각 작업은 하나의 질문에서 시작했습니다.</p>
     </div>
     <div class="projects" id="projects"></div>
   </section>
 
-  <section class="sec wrap" id="archive">
-    <div class="sec-head grid">
-      <span class="idx label">Archive</span>
-      <h2>그 밖의 작업</h2>
-      <p>수업, 동아리, 디자인, 기획 가운데 기록해 둘 만한 것들.</p>
-    </div>
-    <ul class="arch" id="arch"></ul>
-  </section>
-
-  <section class="sec wrap" id="research">
-    <div class="sec-head grid">
-      <span class="idx label">Research</span>
-      <h2>연구</h2>
-      <p>관심사가 옮겨 온 길을 연도 위에 그렸습니다. 선을 누르거나 마우스를 올리면 내용이 보입니다.</p>
-    </div>
-    <div class="threads-wrap"><div class="threads" id="threads" role="img" aria-label="연구 주제의 흐름, 2008년부터 2026년"></div></div>
-    <p class="thread-tip" id="thread-tip" aria-live="polite"></p>
-    <div class="cols grid">
-      <section class="block third"><h3>진행 중</h3><ul class="plain" id="ongoing"></ul></section>
-      <section class="block two-third"><h3>출판 · 논문</h3><ul class="pubs" id="pubs"></ul></section>
-    </div>
-  </section>
-
-  <section class="sec wrap" id="teaching">
-    <div class="sec-head grid">
-      <span class="idx label">Teaching</span>
-      <h2>가르치는 일</h2>
-      <p>미술고등학교 교실에서 지키려는 원칙과, 학교 밖에서 교사들과 나눈 이야기.</p>
-    </div>
-    <div class="approach" id="approach"></div>
-    <div class="cols grid">
-      <section class="block third"><h3>가르친 과목</h3><ul class="plain" id="courses"></ul></section>
-      <section class="block two-third"><h3>강연 · 연수</h3><ul class="ledger" id="talks"></ul></section>
-    </div>
-  </section>
+  <div id="chapters"></div>
 
   <section class="sec wrap" id="images">
     <div class="sec-head grid">
@@ -102,14 +75,6 @@
       <p>평소에는 흑백으로 보이고, 마우스를 올리면 원래 색이 나옵니다. 학생 얼굴과 이름이 드러난 사진은 싣지 않았습니다.</p>
     </div>
     <div class="gallery" id="gallery-grid"></div>
-  </section>
-
-  <section class="sec wrap" id="cv">
-    <div class="sec-head grid">
-      <span class="idx label">Curriculum Vitae</span>
-      <h2>이력</h2>
-    </div>
-    <div class="cols grid" id="cv-list"></div>
   </section>
 </main>
 
