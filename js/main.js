@@ -12,8 +12,16 @@
   $("#intro-body").textContent = S.intro.body;
   $("#now").innerHTML = S.intro.now.map((n) => `<div><dt class="label">${esc(n[0])}</dt><dd>${esc(n[1])}</dd></div>`).join("");
   $("#how").textContent = S.intro.howToRead;
-  $("#toc").innerHTML = [{ id: "works", en: "Selected Works", ko: "선별 작업" }, ...S.chapters, { id: "images", en: "Images", ko: "이미지" }]
+  const top = S.chapters.filter((c) => c.id === "life"), rest = S.chapters.filter((c) => c.id !== "life");
+  $("#toc").innerHTML = [...top, { id: "works", en: "Selected Works", ko: "선별 작업" }, ...rest, { id: "images", en: "Images", ko: "이미지" }]
     .map((c) => `<li><a href="#${c.id}"><span class="en">${esc(c.en)}</span><span class="ko">${esc(c.ko)}</span></a></li>`).join("");
+
+  /* QR: tools/make_qr.py가 만든 표에 있는 주소만 */
+  const QR = window.QR || {};
+  const qrImg = (u, cls) => QR[u] ? `<span class="qr ${cls || ""}"><img src="${QR[u]}" alt="${esc(host(u))} QR 코드" loading="lazy"></span>` : "";
+  const KIND = { site: "사이트", doc: "자료", article: "기사" };
+  const linkBlock = (links) => `<ul class="links">${links.map(([k, t, u]) => `
+    <li>${qrImg(u)}<a href="${u}" target="_blank" rel="noopener"><span class="lk label">${KIND[k] || ""}</span><span class="lt">${esc(t)} ↗</span><span class="lh">${esc(host(u).split("?")[0])}</span></a></li>`).join("")}</ul>`;
 
   /* 선별 작업 */
   $("#projects").innerHTML = S.works.map((p) => {
@@ -31,7 +39,7 @@
         ${facts}
         ${lists}
         ${p.facts ? "" : `<ul class="made">${p.made.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>`}
-        ${p.link ? `<a class="ext" href="${p.link}" target="_blank" rel="noopener">${esc(host(p.link))} ↗</a>` : ""}
+        ${p.links ? linkBlock(p.links) : ""}
       </div>
       ${pics.length ? `<div class="pics n${pics.length}">${pics.map((f) => `<figure><img loading="lazy" src="${IMG(f)}" alt="${esc(p.title)}"></figure>`).join("")}</div>` : ""}
     </article>`;
@@ -40,7 +48,8 @@
   /* 장(章) */
   const row = (it) => {
     const [d, t, s, l, tech] = it;
-    return `<li><span class="d">${esc(d)}</span><span class="w"><b>${l ? ext(l, t) : esc(t)}</b>${s ? `<small>${esc(s)}</small>` : ""}${tech ? `<span class="tech">${esc(tech)}</span>` : ""}</span></li>`;
+    const q = l ? qrImg(l, "sm") : "";
+    return `<li class="${q ? "has-qr" : ""}"><span class="d">${esc(d)}</span><span class="w"><b>${l ? ext(l, t) : esc(t)}</b>${s ? `<small>${esc(s)}</small>` : ""}${tech ? `<span class="tech">${esc(tech)}</span>` : ""}</span>${q}</li>`;
   };
   const threads = (g) => {
     const span = g.to - g.from + 1;
@@ -53,7 +62,7 @@
     });
     return h + `</div></div><p class="thread-tip">${esc(g.items.map((r) => r[2]).join(" → "))}</p>`;
   };
-  $("#chapters").innerHTML = S.chapters.map((c, i) => `
+  const chapterHTML = (c) => `
     <section class="sec wrap chapter" id="${c.id}">
       <div class="sec-head grid">
         <span class="idx label">${esc(c.en)}</span>
@@ -65,7 +74,9 @@
           <div class="gh"><h3>${esc(g.title)}</h3>${g.note ? `<p class="note">${esc(g.note)}</p>` : ""}<span class="label n">${g.kind === "threads" ? "" : g.items.length + " items"}</span></div>
           <div class="gb">${g.kind === "threads" ? threads(g) : `<ul class="ledger">${g.items.map(row).join("")}</ul>`}</div>
         </div>`).join("")}
-    </section>`).join("");
+    </section>`;
+  $("#chapters-top").innerHTML = top.map(chapterHTML).join("");
+  $("#chapters").innerHTML = rest.map(chapterHTML).join("");
   document.querySelectorAll(".threads").forEach((th) => {
     const tip = th.parentElement.nextElementSibling;
     const show = (e) => { const b = e.target.closest(".tg-bar"); if (b) tip.textContent = b.dataset.tip; };
