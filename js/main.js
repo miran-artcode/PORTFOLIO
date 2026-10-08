@@ -11,10 +11,12 @@
   $("#lead").textContent = S.intro.lead;
   $("#intro-body").textContent = S.intro.body;
   $("#now").innerHTML = S.intro.now.map((n) => `<div><dt class="label">${esc(n[0])}</dt><dd>${esc(n[1])}</dd></div>`).join("");
-  $("#how").textContent = S.intro.howToRead;
-  const top = S.chapters.filter((c) => c.id === "life"), rest = S.chapters.filter((c) => c.id !== "life");
-  $("#toc").innerHTML = [...top, { id: "works", en: "Selected Works", ko: "선별 작업" }, ...rest, { id: "images", en: "Images", ko: "이미지" }]
-    .map((c) => `<li><a href="#${c.id}"><span class="en">${esc(c.en)}</span><span class="ko">${esc(c.ko)}</span></a></li>`).join("");
+
+  /* 순서와 상단 메뉴: data.js의 order 한 줄이 정합니다 */
+  const META = { works: { en: "Selected Works", ko: "선별 작업" }, images: { en: "Images", ko: "이미지" } };
+  S.chapters.forEach((c) => (META[c.id] = c));
+  const num = (id) => String(S.order.indexOf(id) + 1).padStart(2, "0");
+  $("#nav").innerHTML = S.order.map((id) => `<a href="#${id}"><span class="n">${num(id)}</span><span class="ko">${esc(META[id].ko)}</span><span class="en">${esc(META[id].en)}</span></a>`).join("");
 
   /* QR: tools/make_qr.py가 만든 표에 있는 주소만 */
   const QR = window.QR || {};
@@ -63,9 +65,19 @@
     });
     return h + `</div></div><p class="thread-tip">${esc(g.items.map((r) => r[2]).join(" → "))}</p>`;
   };
-  const cards = (g) => `<div class="cards">${g.items.map((c) => `
-    <article class="card">
-      <div class="cm"><span class="d">${esc(c.date)}</span>${c.org ? `<span class="o">${esc(c.org)}</span>` : ""}</div>
+  /* 강의: 연도 묶음 안에서 의뢰 기관별로 — 국가기관, 교육청, 대학, 학교, 그 밖의 순 */
+  const RANK = (o) => /^(교육부|한국교육학술정보원|한국과학창의재단)/.test(o) ? 0 : /교육청|교육지원청/.test(o) ? 1 : /대학교$/.test(o) ? 2 : /학교$/.test(o) ? 3 : 4;
+  const byOrg = (a, b) => RANK(a) - RANK(b) || a.localeCompare(b, "ko");
+  const lectures = (g) => {
+    const by = new Map();
+    [...g.items].sort((a, b) => byOrg(a[1], b[1])).forEach((r) => { if (!by.has(r[1])) by.set(r[1], []); by.get(r[1]).push(r); });
+    return `<div class="lec">${[...by].map(([org, rs]) => `
+      <div class="lo"><p class="lo-h">${esc(org)}</p><ul class="ledger">${rs.map(([aud, , t, s]) =>
+        `<li data-aud="${esc(aud)}"><span class="d aud">${esc(aud)}</span><span class="w"><b>${esc(t)}</b>${s ? `<small>${esc(s)}</small>` : ""}</span></li>`).join("")}</ul></div>`).join("")}</div>`;
+  };
+  const cards = (g) => `<div class="cards">${(g.items.some((c) => c.aud) ? [...g.items].sort((a, b) => b.date.localeCompare(a.date)) : g.items).map((c) => `
+    <article class="card"${c.aud ? ` data-aud="${esc(c.aud)}"` : ""}>
+      <div class="cm"><span class="d">${esc(c.date)}</span>${c.aud ? `<span class="o">${esc(c.aud)}</span>` : ""}${c.org ? `<span class="o">${esc(c.org)}</span>` : ""}</div>
       <h4>${esc(c.title)}</h4>
       ${c.core && c.core.length ? `<ul class="core">${c.core.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
       ${c.imgs && c.imgs.length ? `<div class="cpics n${Math.min(c.imgs.length, 3)}">${c.imgs.map((m) => `<figure><img loading="lazy" src="${IMG(m[0])}" alt="${esc(m[1])}"><figcaption>${esc(m[1])}</figcaption></figure>`).join("")}</div>` : ""}
@@ -76,15 +88,34 @@
         <span class="idx label">${esc(c.en)}</span>
         <h2>${esc(c.ko)}</h2>
         <p>${esc(c.blurb)}</p>
+        ${c.filter ? `<div class="filt" role="group" aria-label="대상">${["전체", ...c.filter].map((f, i) => `<button class="pill" type="button" data-f="${i ? esc(f) : ""}" aria-pressed="${!i}">${esc(f)}</button>`).join("")}</div>` : ""}
       </div>
       ${c.groups.map((g) => `
         <div class="group grid">
-          <div class="gh"><h3>${esc(g.title)}</h3>${g.note ? `<p class="note">${esc(g.note)}</p>` : ""}<span class="label n">${g.kind === "threads" ? "" : g.items.length + " items"}</span></div>
-          <div class="gb">${g.kind === "threads" ? threads(g) : g.kind === "cards" ? cards(g) : `<ul class="ledger">${g.items.map(row).join("")}</ul>`}</div>
+          <div class="gh"><h3>${esc(g.title)}</h3>${g.note ? `<p class="note">${esc(g.note)}</p>` : ""}<span class="label n">${g.kind === "threads" ? "" : `<i>${g.items.length}</i> ${g.items.length === 1 ? "item" : "items"}`}</span></div>
+          <div class="gb">${g.kind === "threads" ? threads(g) : g.kind === "cards" ? cards(g) : g.kind === "lectures" ? lectures(g) : `<ul class="ledger">${g.items.map(row).join("")}</ul>`}</div>
         </div>`).join("")}
     </section>`;
-  $("#chapters-top").innerHTML = top.map(chapterHTML).join("");
-  $("#chapters").innerHTML = rest.map(chapterHTML).join("");
+  $("#chapters").innerHTML = S.chapters.map(chapterHTML).join("");
+  /* order대로 구역을 다시 놓고, 구역 머리에 메뉴와 같은 번호를 붙입니다 */
+  const main = $("main");
+  S.order.forEach((id) => { const el = document.getElementById(id); if (el) main.appendChild(el); });
+  $("#chapters").remove();
+  S.order.forEach((id) => { const i = document.querySelector(`#${id} > .sec-head .idx`); if (i) i.textContent = num(id) + " " + META[id].en; });
+
+  /* 대상 고르기: 고른 대상이 없는 기관·연도 묶음은 접습니다 */
+  document.querySelectorAll(".filt").forEach((bar) => bar.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const f = b.dataset.f, sec = bar.closest("section");
+    bar.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    sec.querySelectorAll("[data-aud]").forEach((el) => (el.hidden = !!f && !el.dataset.aud.split("·").includes(f)));
+    sec.querySelectorAll(".lo").forEach((o) => (o.hidden = !o.querySelector("li:not([hidden])")));
+    sec.querySelectorAll(".group").forEach((g) => {
+      const items = g.querySelectorAll("[data-aud]"); if (!items.length) return;
+      const n = g.querySelectorAll("[data-aud]:not([hidden])").length;
+      g.hidden = !n; const c = g.querySelector(".gh .n"); if (c) c.innerHTML = `<i>${n}</i> ${n === 1 ? "item" : "items"}`;
+    });
+  }));
   document.querySelectorAll(".threads").forEach((th) => {
     const tip = th.parentElement.nextElementSibling;
     const show = (e) => { const b = e.target.closest(".tg-bar"); if (b) tip.textContent = b.dataset.tip; };
@@ -122,14 +153,17 @@
   gridBtn.addEventListener("click", toggleGrid);
   addEventListener("keydown", (e) => { if ((e.key === "g" || e.key === "G") && !e.target.closest("input,textarea") && !e.metaKey && !e.ctrlKey) toggleGrid(); });
 
-  const nav = $("#nav"), menuBtn = $("#menu-btn");
-  menuBtn.addEventListener("click", () => { const o = nav.classList.toggle("open"); menuBtn.setAttribute("aria-expanded", o); });
-  nav.addEventListener("click", (e) => { if (e.target.closest("a")) { nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", false); } });
-
-  const links = [...nav.querySelectorAll("a")];
+  const nav = $("#nav"), links = [...nav.querySelectorAll("a")];
   const io = new IntersectionObserver((ents) => ents.forEach((en) => {
-    if (en.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + en.target.id));
-  }), { rootMargin: "-40% 0px -55% 0px" });
+    if (!en.isIntersecting) return;
+    links.forEach((a) => {
+      const on = a.getAttribute("href") === "#" + en.target.id;
+      a.classList.toggle("on", on);
+      if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+      /* 좁은 화면에서 가로로 넘기는 메뉴: 지금 구역 버튼이 보이도록 */
+      if (on && nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: a.offsetLeft - 16, behavior: "smooth" });
+    });
+  }), { rootMargin: "-30% 0px -65% 0px" });
   document.querySelectorAll("main section.sec[id]").forEach((s) => io.observe(s));
 
   const toast = $("#toast");
