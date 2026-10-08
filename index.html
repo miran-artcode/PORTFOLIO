@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>황미란 Hwang Miran</title>
+<meta name="description" content="황미란 — 미술·디자인 교육자, 디자이너, 연구자. 서울미술고등학교 미술(디자인) 교사. 수업, 디자인·개발, 연구·집필, 강의 기록.">
+<meta property="og:title" content="황미란 Hwang Miran">
+<meta property="og:description" content="Educator · Designer · Researcher — 미술·디자인 교육과 AI 융합 수업을 설계하고 만들고 연구합니다.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23111114'/%3E%3Cpath d='M0 21.3h64M0 42.6h64M21.3 0v64M42.6 0v64' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21.3' y='21.3' width='21.3' height='21.3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="overlay" id="overlay" hidden aria-hidden="true"><div class="grid"></div></div>
+
+<header class="top">
+  <div class="wrap grid">
+    <a class="who" href="#top">황미란 <span class="label">Hwang Miran</span></a>
+    <nav id="nav" aria-label="구역">
+      <a href="#about">소개</a>
+      <a href="#work">작업</a>
+      <a href="#design">디자인·개발</a>
+      <a href="#research">연구·집필</a>
+      <a href="#talks">강의</a>
+      <a href="#gallery">이미지</a>
+      <a href="#cv">이력</a>
+      <a href="#contact">연락</a>
+    </nav>
+    <div class="tools">
+      <button class="pill grid-btn" id="grid-btn" type="button" aria-pressed="false" title="12단 그리드 보기 (G)">Grid</button>
+      <button class="pill" id="theme-btn" type="button">Dark</button>
+      <button class="pill menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav">Menu</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero wrap" aria-label="첫 화면">
+    <div class="meta grid" id="meta"></div>
+    <div class="mega-box"><h1 class="mega" id="mega">Hwang Miran</h1></div>
+    <div class="roles grid" id="roles"></div>
+    <div class="figures grid"><ul id="figures"></ul></div>
+  </section>
+
+  <section class="sec wrap" id="about">
+    <div class="sec-head grid">
+      <span class="idx label num">01</span>
+      <h2>About <span class="ko">소개</span></h2>
+      <p>미술고등학교 교실에서 시작해 교과서·교사연수·연구로 넓혀 온 일의 원칙.</p>
+    </div>
+    <div class="statement grid">
+      <blockquote id="statement"></blockquote>
+      <div class="beliefs" id="beliefs"></div>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="map">
+    <div class="sec-head grid">
+      <span class="idx label num">02</span>
+      <h2>20 Years on a Grid <span class="ko">활동 지도</span></h2>
+      <p>칸 하나가 한 해입니다. 진할수록 그해 그 영역의 일이 많았습니다. 칸을 누르거나 올리면 내용이 나옵니다.</p>
+    </div>
+    <div class="matrix-wrap"><div class="matrix" id="matrix" role="img" aria-label="연도별·영역별 활동 밀도 표"></div></div>
+    <div class="matrix-key label">
+      <span><i></i>없음</span><span><i style="background:var(--mark-soft);border-color:var(--mark-soft)"></i>참여</span>
+      <span><i style="background:color-mix(in srgb,var(--mark) 55%,var(--bg));border-color:transparent"></i>주도</span>
+      <span><i style="background:var(--mark);border-color:var(--mark)"></i>대표 성과</span>
+    </div>
+    <p class="matrix-tip" id="matrix-tip" aria-live="polite">칸을 선택하면 그해의 활동이 여기에 표시됩니다.</p>
+  </section>
+
+  <section class="sec wrap" id="work">
+    <div class="sec-head grid">
+      <span class="idx label num">03</span>
+      <h2>Selected Work <span class="ko">작업 색인</span></h2>
+      <p>수업, 진학지도, 전시·행사, 동아리, AI·디지털, 학교 운영, 국제교육. 줄을 누르면 자세한 내용이 펼쳐집니다.</p>
+    </div>
+    <div class="filters" id="filters" role="group" aria-label="영역 거르기"></div>
+    <ul class="index" id="work-list"></ul>
+  </section>
+
+  <section class="sec wrap" id="design">
+    <div class="sec-head grid">
+      <span class="idx label num">04</span>
+      <h2>Design &amp; Code <span class="ko">디자인·개발</span></h2>
+      <p>수업과 학교 업무에 필요한 도구를 직접 기획·디자인·개발합니다. 모두 실제 수업과 연수에서 쓰고 있습니다.</p>
+    </div>
+    <div class="apps grid" id="apps"></div>
+    <div class="cols grid" style="margin-top:clamp(40px,5vw,72px)">
+      <section class="block wide"><h3>그 밖에 만든 도구<span class="label num" id="apps-more-n"></span></h3><ul class="ledger" id="apps-more"></ul></section>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="research">
+    <div class="sec-head grid">
+      <span class="idx label num">05</span>
+      <h2>Research &amp; Writing <span class="ko">연구·집필</span></h2>
+      <p>다문화 미술교육(2014)에서 데이터 리터러시·AI 융합 미술교육(2026)으로 이어진 연구와 공식 집필.</p>
+    </div>
+    <ul class="pubs" id="pubs"></ul>
+    <div class="cols grid" id="research-list" style="margin-top:clamp(36px,5vw,64px)"></div>
+  </section>
+
+  <section class="sec wrap" id="talks">
+    <div class="sec-head grid">
+      <span class="idx label num">06</span>
+      <h2>Talks &amp; Teaching <span class="ko">강의·연수</span></h2>
+      <p>교육부·KERIS·한국교육과정평가원·교육청·학교에서 교사와 학생을 만난 기록.</p>
+    </div>
+    <div class="talks-years" id="talk-years"></div>
+    <div class="cols grid" id="talks-list"></div>
+  </section>
+
+  <section class="sec wrap" id="gallery">
+    <div class="sec-head grid">
+      <span class="idx label num">07</span>
+      <h2>Images <span class="ko">수업·작품 이미지</span></h2>
+      <p>평소에는 흑백으로, 이미지 위에 올리면 원래 색으로 보입니다. 학생 얼굴과 이름이 드러난 사진은 싣지 않았습니다.</p>
+    </div>
+    <div class="gallery" id="gallery-grid"></div>
+  </section>
+
+  <section class="sec wrap" id="cv">
+    <div class="sec-head grid">
+      <span class="idx label num">08</span>
+      <h2>Curriculum Vitae <span class="ko">이력</span></h2>
+      <p>학력·경력·보직·수상·위촉·자격·연수·봉사. 공문과 증빙으로 확인한 항목만 적었습니다.</p>
+    </div>
+    <div class="cols grid" id="cv-list"></div>
+  </section>
+
+  <section class="sec wrap" id="voices-sec">
+    <div class="sec-head grid">
+      <span class="idx label num">09</span>
+      <h2>Voices <span class="ko">학생 수업 평가에서</span></h2>
+      <p>교원능력개발평가 학생 서술 응답 가운데 일부를 그대로 옮겼습니다.</p>
+    </div>
+    <div class="voices grid" id="voices"></div>
+  </section>
+</main>
+
+<footer class="foot wrap" id="contact">
+  <div class="grid">
+    <span class="label" style="grid-column:1/-1">10 / Contact</span>
+    <p class="big">Let’s make<br>class together.</p>
+    <div class="c1"><span class="label">Email</span><br><button class="copy" type="button" data-email title="눌러서 복사"></button></div>
+    <div class="c2"><span class="label">Based in</span><br>서울미술고등학교 · Seoul, Korea</div>
+    <div class="c3"><span class="label">Updated</span><br><span id="updated"></span> · 황미란</div>
+  </div>
+</footer>
+
+<div class="peek" id="peek" aria-hidden="true"><img alt=""></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
