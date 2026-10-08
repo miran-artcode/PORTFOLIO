@@ -32,6 +32,7 @@
     <article class="proj grid${pics.length ? "" : " no-img"}" id="${p.id}">
       <div class="meta"><span class="label">${esc(p.year)}</span><span class="label k">${esc(p.kind)}</span></div>
       <div class="txt">
+        ${p.org ? `<p class="org">${esc(p.org)}</p>` : ""}
         <h3>${esc(p.title)}</h3>
         <p class="en">${esc(p.en)}</p>
         <p class="q">${esc(p.question)}</p>
@@ -47,9 +48,9 @@
 
   /* 장(章) */
   const row = (it) => {
-    const [d, t, s, l, tech] = it;
+    const [d, org, t, s, l, tech] = it;
     const q = l ? qrImg(l, "sm") : "";
-    return `<li class="${q ? "has-qr" : ""}"><span class="d">${esc(d)}</span><span class="w"><b>${l ? ext(l, t) : esc(t)}</b>${s ? `<small>${esc(s)}</small>` : ""}${tech ? `<span class="tech">${esc(tech)}</span>` : ""}</span>${q}</li>`;
+    return `<li class="${q ? "has-qr" : ""}"><span class="d">${esc(d)}</span><span class="w">${org ? `<strong class="org">${esc(org)}</strong>` : ""}<b>${l ? ext(l, t) : esc(t)}</b>${s ? `<small>${esc(s)}</small>` : ""}${tech ? `<span class="tech">${esc(tech)}</span>` : ""}</span>${q}</li>`;
   };
   const threads = (g) => {
     const span = g.to - g.from + 1;
@@ -62,6 +63,13 @@
     });
     return h + `</div></div><p class="thread-tip">${esc(g.items.map((r) => r[2]).join(" → "))}</p>`;
   };
+  const cards = (g) => `<div class="cards">${g.items.map((c) => `
+    <article class="card">
+      <div class="cm"><span class="d">${esc(c.date)}</span>${c.org ? `<span class="o">${esc(c.org)}</span>` : ""}</div>
+      <h4>${esc(c.title)}</h4>
+      ${c.core && c.core.length ? `<ul class="core">${c.core.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${c.imgs && c.imgs.length ? `<div class="cpics n${Math.min(c.imgs.length, 3)}">${c.imgs.map((m) => `<figure><img loading="lazy" src="${IMG(m[0])}" alt="${esc(m[1])}"><figcaption>${esc(m[1])}</figcaption></figure>`).join("")}</div>` : ""}
+    </article>`).join("")}</div>`;
   const chapterHTML = (c) => `
     <section class="sec wrap chapter" id="${c.id}">
       <div class="sec-head grid">
@@ -72,7 +80,7 @@
       ${c.groups.map((g) => `
         <div class="group grid">
           <div class="gh"><h3>${esc(g.title)}</h3>${g.note ? `<p class="note">${esc(g.note)}</p>` : ""}<span class="label n">${g.kind === "threads" ? "" : g.items.length + " items"}</span></div>
-          <div class="gb">${g.kind === "threads" ? threads(g) : `<ul class="ledger">${g.items.map(row).join("")}</ul>`}</div>
+          <div class="gb">${g.kind === "threads" ? threads(g) : g.kind === "cards" ? cards(g) : `<ul class="ledger">${g.items.map(row).join("")}</ul>`}</div>
         </div>`).join("")}
     </section>`;
   $("#chapters-top").innerHTML = top.map(chapterHTML).join("");

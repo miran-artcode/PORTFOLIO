@@ -288,3 +288,27 @@ a.ul:hover { border-color: var(--ink); }
 }
 @media print { .qr { border-color: #ccc; } }
 .links .lk, .sub .label { font-family: var(--f-sans); text-transform: none; letter-spacing: 0; font-size: 11.5px; }
+
+/* ── 강의 노트 · 수업 자료 카드 (2026.10.8.) ── */
+.cards { display: grid; gap: 0; }
+.card { padding: 18px 0 24px; border-bottom: 1px solid var(--line); }
+.cards .card:first-child { border-top: 1px solid var(--ink); }
+.card .cm { display: flex; flex-wrap: wrap; gap: 4px 14px; font: var(--t-xs)/1.5 var(--f-mono); color: var(--ink-2); }
+.card .cm .o { font-family: var(--f-sans); }
+.card h4 { margin: 6px 0 10px; font: 600 var(--t-md)/1.35 var(--f-sans); letter-spacing: -.03em; }
+.card .core { margin: 0 0 14px; padding-left: 1.1em; font-size: var(--t-sm); line-height: 1.6; color: var(--ink-2); }
+.card .core li + li { margin-top: 3px; }
+.cpics { display: grid; gap: var(--gutter); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cpics.n1 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.cpics.n2 { grid-template-columns: 1fr 1fr; }
+.cpics figure { margin: 0; }
+.cpics img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--line); filter: grayscale(1) contrast(1.04); transition: filter .4s; }
+.cpics img.tall, .cpics figure.tall img { aspect-ratio: auto; }
+.cpics figure:hover img { filter: none; }
+.cpics figcaption { margin-top: 4px; font-size: var(--t-xs); color: var(--ink-3); line-height: 1.4; }
+@media (max-width: 640px) { .cpics, .cpics.n1, .cpics.n2 { grid-template-columns: 1fr 1fr; } }
+
+/* ── 주최·주관 기관: 제목 앞에 굵게 ─────── */
+.ledger .org { display: inline; font-weight: 700; color: var(--ink); margin-right: .55em; }
+.ledger .org::after { content: ""; display: inline-block; width: 1px; height: .85em; background: var(--ink-3); margin-left: .55em; vertical-align: -.05em; }
+.proj p.org { margin: 0 0 6px; font-size: var(--t-sm); font-weight: 700; letter-spacing: -.01em; }
