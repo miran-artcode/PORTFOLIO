@@ -2083,6 +2083,18 @@ window.SITE_EN = {
        "Region 1 representative instructor · standard training plan development"
       ],
       [
+       "Teachers",
+       "KERIS",
+       "AI Lead Teacher Training, Incheon Mixed Class (Arts & PE · Art)",
+       "7.18. session 1 · lead instructor"
+      ],
+      [
+       "Teachers",
+       "Hanyang Technical High School",
+       "Customized Training, Course 5",
+       "specialist instructor · 3 hours"
+      ],
+      [
        "Instructors",
        "KERIS · SNU Center for Learning Sciences",
        "Instructor Workshop for Lead Teacher Training",
