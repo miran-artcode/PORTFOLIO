@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>사이트 편집 · 황미란</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23111114'/%3E%3Cpath d='M18 46l4-12 20-20 8 8-20 20z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+  /* 편집 화면: 흰 바탕·검정 잉크, 사이트와 같은 톤. 칸은 표처럼 줄을 맞춘다. */
+  :root {
+    --bg: #ffffff; --ink: #111114; --ink-2: #5e5e66; --ink-3: #9a9aa2; --line: #e4e4e8; --wash: #f5f5f6;
+    --ok: #1f6b3a; --warn: #8a5a00; --bad: #a3262a;
+    --f: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --mono: "Geist Mono", ui-monospace, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.6 var(--f); word-break: keep-all; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .bar { position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
+    padding: 10px 20px; background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--ink); }
+  .brand { font-weight: 600; margin-right: 4px; }
+  .brand a { font-weight: 400; color: var(--ink-2); margin-left: 8px; font-size: 13px; }
+  .langs { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .langs button { border: 0; background: none; padding: 5px 12px; font-size: 13px; }
+  .langs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .find { display: inline-flex; align-items: center; gap: 8px; flex: 1 1 220px; min-width: 0; }
+  #q { flex: 1; min-width: 0; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; font: inherit; }
+  #qn { font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+  #state { font-size: 12px; color: var(--ink-2); }
+  .btn { border: 1px solid var(--ink); background: var(--bg); border-radius: 999px; padding: 6px 14px; }
+  .btn.primary { background: var(--ink); color: var(--bg); }
+  .btn:disabled { opacity: .35; cursor: default; }
+  #conn { border: 1px solid var(--line); background: none; border-radius: 999px; padding: 6px 12px; font-size: 13px; color: var(--ink-2); }
+  #conn.on { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+
+  .help { margin: 0; padding: 10px 20px; font-size: 13px; color: var(--ink-2); border-bottom: 1px solid var(--line); }
+  #notice { margin: 12px 20px 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; }
+  #notice.ok { border-color: color-mix(in srgb, var(--ok) 45%, transparent); color: var(--ok); }
+  #notice.warn { border-color: color-mix(in srgb, var(--warn) 45%, transparent); color: var(--warn); }
+  #notice.bad { border-color: color-mix(in srgb, var(--bad) 45%, transparent); color: var(--bad); }
+  #notice button { margin: 4px 4px 0 0; border: 1px solid currentColor; background: var(--bg); border-radius: 999px; padding: 3px 10px; font-size: 12px; }
+
+  #connect { margin: 12px 20px 0; padding: 16px 20px; border: 1px solid var(--ink); border-radius: 8px; max-width: 760px; }
+  #connect h3 { margin: 0 0 6px; font-size: 15px; }
+  #connect ol { margin: 8px 0 12px; padding-left: 1.3em; }
+  #connect li { margin: 3px 0; }
+  #connect code { font-family: var(--mono); font-size: 12px; background: var(--wash); padding: 1px 5px; border-radius: 4px; }
+  #connect .tokrow { display: flex; gap: 8px; flex-wrap: wrap; }
+  #tok { flex: 1 1 260px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; font: 13px var(--mono); }
+  #connect-msg { color: var(--bad); font-size: 13px; min-height: 1.4em; margin: 6px 0 0; }
+  #connect small { color: var(--ink-2); }
+
+  .layout { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 28px; padding: 16px 20px 120px; }
+  #side { position: sticky; top: 64px; align-self: start; display: flex; flex-direction: column; font-size: 13px; }
+  #side a { text-decoration: none; color: var(--ink-2); padding: 5px 0; border-bottom: 1px solid var(--line); }
+  #side a:hover { color: var(--ink); }
+
+  .sec { padding-bottom: 36px; scroll-margin-top: 70px; }
+  .sec > h2 { margin: 8px 0 14px; font-size: 22px; letter-spacing: -.02em; border-bottom: 1px solid var(--ink); padding-bottom: 6px; }
+  .sub { margin: 10px 0 4px; }
+  .sub h4 { margin: 10px 0 4px; font-size: 12px; font-weight: 500; color: var(--ink-2); }
+  .hint { margin: 4px 0; font-size: 12px; color: var(--ink-3); }
+
+  .fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 12px; margin-bottom: 8px; }
+  .fields .wide, .fields .sub, .fields .hint { grid-column: 1 / -1; }
+  .f { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .f .lb { font-size: 11px; color: var(--ink-2); }
+  input[data-p], textarea[data-p] { width: 100%; min-width: 0; font: inherit; color: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); }
+  textarea[data-p] { resize: vertical; field-sizing: content; min-height: 2.25em; max-height: 18em; line-height: 1.5; }
+  input[data-p]:hover, textarea[data-p]:hover { border-color: var(--ink-3); }
+  input[data-p]:focus, textarea[data-p]:focus { border-color: var(--ink); outline: none; }
+
+  .grp { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 14px; }
+  .grp > header { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 6px; }
+  .grp > header .gt { flex: 0 1 240px; }
+  .grp > header .gt input { font-weight: 600; }
+  .grp > header .gn { flex: 1 1 300px; }
+  .kind { font-size: 11px; color: var(--ink-3); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; margin-bottom: 6px; }
+
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) 128px; gap: 8px; align-items: start; padding: 3px 0; }
+  .row .cells { display: grid; gap: 6px; min-width: 0; }
+  .row .cells .lb { display: none; }
+  .row.head { padding-bottom: 0; }
+  .row.head span { font-size: 11px; color: var(--ink-2); padding-left: 2px; }
+  .row:not(.head):hover { background: var(--wash); }
+  .row textarea[data-p] { resize: none; }
+  .ops { display: flex; gap: 4px; padding-top: 2px; }
+  .ops button, .adds button { border: 1px solid var(--line); background: var(--bg); border-radius: 5px; padding: 3px 8px; font-size: 12px; color: var(--ink-2); }
+  .ops button:hover, .adds button:hover { border-color: var(--ink); color: var(--ink); }
+  .ops button.arm { border-color: var(--bad); color: var(--bad); }
+  .adds { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 2px; }
+
+  .work { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+  .work > header { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; }
+
+  [hidden] { display: none !important; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    #side { position: static; flex-direction: row; flex-wrap: wrap; gap: 4px 12px; }
+    #side a { border: 0; }
+    .row { grid-template-columns: 1fr; border-bottom: 1px solid var(--line); padding: 8px 0; }
+    .row.head { display: none; }
+    .row .cells { grid-template-columns: 1fr !important; }
+    .row .cells .lb { display: block; }
+  }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="brand">사이트 편집<a href="./" target="_blank" rel="noopener">사이트 보기 ↗</a></div>
+  <div class="langs" role="group" aria-label="고칠 언어"><button type="button" data-lang="ko">한국어</button><button type="button" data-lang="en">English</button></div>
+  <div class="find"><input id="q" type="search" placeholder="찾기 (예: 교육부, 2025, 교과서)" aria-label="찾기"><span id="qn"></span></div>
+  <span id="state"></span>
+  <button type="button" class="btn" id="preview">미리보기</button>
+  <button type="button" class="btn primary" id="save" disabled title="Ctrl+S">저장하기</button>
+  <button type="button" id="conn">GitHub 연결</button>
+</header>
+<p class="help">칸을 고치면 이 컴퓨터에 자동으로 임시 보관됩니다. <b>미리보기</b>로 실제 사이트 모양을 확인하고, <b>저장하기</b>를 누르면 약 1분 뒤 공개 사이트에 반영됩니다. 빈 줄은 저장할 때 지워집니다.</p>
+<div id="notice" hidden></div>
+
+<section id="connect" hidden>
+  <h3>GitHub 연결 (이 컴퓨터에서 처음 한 번)</h3>
+  <ol>
+    <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">토큰 만들기 화면 열기 ↗</a> (miran-artcode 계정으로 로그인)</li>
+    <li><b>Token name</b>: <code>포트폴리오 편집</code>, <b>Expiration</b>: 원하는 기간(예: 1년)</li>
+    <li><b>Repository access</b>: <code>Only select repositories</code> → <code>PORTFOLIO</code> 하나만 고르기</li>
+    <li><b>Permissions → Repository permissions → Contents</b>: <code>Read and write</code></li>
+    <li>맨 아래 <b>Generate token</b> → 나온 값(<code>github_pat_…</code>)을 복사해 아래 칸에 붙여 넣기</li>
+  </ol>
+  <div class="tokrow"><input id="tok" type="password" placeholder="github_pat_…" autocomplete="off" aria-label="GitHub 토큰"><button type="button" class="btn primary" id="tok-save">연결</button><button type="button" class="btn" id="tok-forget">이 컴퓨터에서 연결 지우기</button></div>
+  <p id="connect-msg" role="status"></p>
+  <small>토큰은 이 컴퓨터의 브라우저에만 저장되고 GitHub 말고 다른 곳으로 보내지 않습니다. 이 토큰으로는 PORTFOLIO 저장소의 파일만 고칠 수 있습니다.</small>
+</section>
+
+<div class="layout">
+  <nav id="side" aria-label="구역"></nav>
+  <main id="ed"><p class="hint">불러오는 중…</p></main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="js/serialize.js"></script>
+<script src="js/edit.js"></script>
+</body>
+</html>

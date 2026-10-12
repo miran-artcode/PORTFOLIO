@@ -77,6 +77,21 @@
 <div class="toast" id="toast" role="status"></div>
 
 <script src="js/data.js"></script>
+<script>
+/* 편집 화면(edit.html)의 미리보기: 주소에 ?draft 가 있으면 저장하기 전 수정본을 보여 줍니다 */
+(function () {
+  if (!/[?&]draft\b/.test(location.search)) return;
+  try {
+    var ko = JSON.parse(localStorage.getItem("hm-draft-ko") || "null"), en = JSON.parse(localStorage.getItem("hm-draft-en") || "null");
+    if (ko && ko.data) window.SITE = ko.data;
+    if (en && en.data) window.SITE_EN = en.data;
+    var b = document.createElement("div");
+    b.textContent = "미리보기 · 아직 저장하지 않은 수정본입니다";
+    b.style.cssText = "position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:999;background:#111114;color:#fff;padding:8px 16px;border-radius:999px;font:13px/1.4 sans-serif";
+    document.body.appendChild(b);
+  } catch (e) {}
+})();
+</script>
 <script src="js/qr.js"></script>
 <script src="js/main.js"></script>
 </body>
