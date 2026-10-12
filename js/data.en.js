@@ -28,7 +28,9 @@ window.SITE_EN = {
       year: "2026",
       kind: "Lesson design · Web platform",
       org: "Korea Institute for Curriculum and Evaluation (KICE)",
-      img: "app-fictive-archive.jpg",
+      pics: [
+        { src: "app-fictive-archive.jpg" }
+      ],
       question: "Can making and exhibiting artifacts that never existed train students' eyes for real art?",
       text: "I structured the second-year course “Advanced Computer Graphics Practice” as a one-semester project, “Fictive Archive: Traces of Today Discovered 300 Years Later,” and am running it with five classes in the second semester of 2026. Students create fictional artifacts with generative AI, write artifact cards and exhibition texts, and critique their peers' exhibitions. To keep the creative process from scattering, I built a class platform with student worksheets, peer assessment and a teacher dashboard. The project was refined into an art lesson plan for KICE's research on generative AI in creative education.",
       made: [
@@ -46,30 +48,16 @@ window.SITE_EN = {
       ]
     },
     {
-      id: "data-eye",
-      title: "Reading Paintings as Data",
-      en: "Reading Paintings as Data",
-      year: "2024–2025",
-      kind: "Lesson design · Web tool",
-      org: "",
-      img: "kmeans-infographic.jpg",
-      img2: "app-datacanvas.jpg",
-      question: "Does reading a painting as data on color and composition make appreciation shallower or deeper?",
-      text: "In this lesson, students extract the main colors of a famous painting with K-means, analyze its composition, texture and form, and then use the results as rules to remake it as interactive media art. I built a class website so that the work runs from analysis to creation on a single screen. With two computer science teachers from the Dongjak-Gwanak AI Convergence Education working group, I ran an introductory AI special lecture that treated data visualization as a method of art.",
-      made: ["Lesson flow from analysis to creation to sharing (achievement standards [12Art02-01], [12Art02-04])","Class website with color clustering, object detection, audio analysis and an AI appreciation coach","Open class for the Ministry of Education AIEDAP research group, “Data-Based Information Visualization Lesson” (2025.6.18.)"],
-      links: [
-        ["site","Reading Paintings as Data class website","https://lab-datacanvas.web.app"]
-      ]
-    },
-    {
       id: "mind-weather",
       title: "Mind Weather Museum",
       en: "Mind Weather Museum",
       year: "2023–2024",
       kind: "Lesson design · Editorial design",
       org: "Seoul Metropolitan Office of Education (SMOE)",
-      img: "maum-weather-book.jpg",
-      img2: "maum-weather-card.jpg",
+      pics: [
+        { src: "maum-weather-book.jpg" },
+        { src: "maum-weather-card.jpg" }
+      ],
       question: "What kind of writing comes from appreciation that starts with today's mood?",
       text: "Students pick today's mind weather through an AI personality test, then check for themselves whether the painting the AI recommended really fits. Finding cases where the recommendation is wrong is also part of the lesson. Their appreciation essays were compiled in Figma into a class essay book and shared as an online exhibition. The lesson was included as the art case in SMOE's guide to digital instruction.",
       made: ["Two-lesson unit linking social-emotional learning and appreciation (achievement standard [12ArtApp01-02])","Class appreciation essay book","Online exhibition","Presented as a leading case of AI- and digital-based instructional innovation in the social-emotional section of the training for Education Innovation Lead Teachers (formerly Classroom Revolution) (instructor confirmation, cohort 1, 2024)"],
@@ -120,7 +108,9 @@ window.SITE_EN = {
       year: "2024",
       kind: "Math–art convergence research · Poster presentation",
       org: "Ministry of Education",
-      img: "aiedap-poster-2024.jpg",
+      pics: [
+        { src: "aiedap-poster-2024.jpg" }
+      ],
       question: "When deepfakes make it impossible to trust what we see, what can statistics in math and hyperrealism in art teach together?",
       text: "A 12-lesson math–art convergence unit designed with Kim Jina, a math teacher at Yangsan Nambu High School. The math lessons cover model evaluation metrics such as accuracy, precision, recall and F1 score, along with sampling bias, confirmation bias and survivorship bias. The art lessons move from analyzing hyperrealist works to digital image analysis, AI art making, and discussion of copyright and artistic authenticity. The theoretical background is Baudrillard's simulacra, Cathy O'Neil's “Weapons of Math Destruction” and Floridi and Cowls's AI4People principles. The stages follow Erickson's concept-based inquiry learning and Wiggins and McTighe's Understanding by Design. It was presented as a joint poster of the Seoul metropolitan area and Gyeongnam region teams in the Ministry of Education AIEDAP (AI Education Alliance & Policy Lab) teacher research.",
       facts: [
@@ -139,7 +129,9 @@ window.SITE_EN = {
       year: "2023",
       kind: "Lesson design · Catalogue",
       org: "",
-      img: "neo-hyper-realism.jpg",
+      pics: [
+        { src: "neo-hyper-realism.jpg" }
+      ],
       question: "When AI can make images that look more real than photographs, what can a hand-painted hyperrealist work still say?",
       text: "A problem-based integrated unit that combined the Introduction to AI course with Art and Art Appreciation and Criticism under one theme (Fogarty's threaded model). Students looked at hyperrealist works, made fake news images with generative AI themselves and debated AI ethics, then edited a Neo-Realism magazine and answered with their own works. The results were gathered into the exhibition “Illusions More Real than Reality: Neo Hyperrealism” and a catalogue.",
       made: ["Integrated PBL unit design: Introduction to AI × Art","“Illusions More Real than Reality: Neo Hyperrealism” exhibition","Student catalogue (2023.12.)"]
@@ -151,7 +143,9 @@ window.SITE_EN = {
       year: "2026",
       kind: "Information design · Web app",
       org: "",
-      img: "app-admission2028.jpg",
+      pics: [
+        { src: "app-admission2028.jpg" }
+      ],
       question: "Can scattered admissions information be turned into a single sheet that a teacher and student can look at together, sitting face to face?",
       text: "A counseling tool that structures the 2028 university admissions implementation plans for art programs and lets users convert school grades and plan early (susi) and regular (jeongsi) applications on one screen. Teachers sign in only with their provincial office of education accounts; students use nicknames. It is used at admissions information sessions and staff training, and is being extended to special admissions for overseas Korean students.",
       made: ["Structured 784 items from the 2028 admissions implementation plans, 634 items from the 2027 admissions guidelines and 133 changes","5-tier ↔ 9-tier school grade conversion, early/regular application planning, counseling with four years of admissions results, counseling reports (6 distribution charts, PDF·DOCX)","Resource library for vocational high school art and design admissions, admissions consulting page for Hongik Design HS, guide to art college admissions abroad, teacher console"],
@@ -166,7 +160,9 @@ window.SITE_EN = {
       year: "2026",
       kind: "Training design · Web app",
       org: "KERIS",
-      img: "app-keris-data.jpg",
+      pics: [
+        { src: "app-keris-data.jpg" }
+      ],
       question: "How can music, art and PE teachers read learning data beyond scores and feed it back into their teaching?",
       text: "I designed a data and feedback teacher training for teachers of creative subjects and built its training site. Participants enter with nicknames and no personal information, and go through five stages: review, self-diagnosis, cases, data analysis and feedback redesign. It was used in the KERIS training for AI lead teachers.",
       made: ["Training materials and facilitation script (KERIS standard module set ⑪ “Reading Art Classes through Data”)","Participatory training site"],
@@ -181,8 +177,10 @@ window.SITE_EN = {
       year: "2019–2020",
       kind: "Lesson design · Maker",
       org: "Seoul Metropolitan Office of Education (SMOE)",
-      img: "automata-poster.jpg",
-      img2: "drawing-concert.jpg",
+      pics: [
+        { src: "automata-poster.jpg" },
+        { src: "drawing-concert.jpg" }
+      ],
       question: "Can circuits and mechanical devices become materials for expression in an art class?",
       text: "I brought automata, wooden speakers, 3D printers and Arduino into art classes. In “Drawing Concert through Electron Flow,” which uses pencil lines as conductors, the drawing itself becomes the circuit. Students took works designed with laser cutting and ran hands-on booths at the Seoul Student Maker Geek Festival.",
       made: ["Maker lesson units (automata, wooden speakers, 3D scanners, Arduino smart farm)","Geek Festival booths “Microplastics and Automata” (2019), “Against Animal Testing and Wooden Speakers” (2020)","App Inventor app “Smart Farm in School”"],
@@ -197,8 +195,10 @@ window.SITE_EN = {
       year: "2016–2019",
       kind: "Lesson design · 3D form",
       org: "",
-      img: "class-letter-chicken.jpg",
-      img2: "class-shrimp-drawing.jpg",
+      pics: [
+        { src: "class-letter-chicken.jpg" },
+        { src: "class-shrimp-drawing.jpg" }
+      ],
       question: "If you look at a familiar object for a long time, how far can its form change?",
       text: "A 3D form class for first-year high school students. It included a typography assignment that turns the strokes of letters into the shapes of objects, and a drawing assignment in which students observed a single shrimp and then transformed it through imagination.",
       made: ["Typography assignment “Expressing with Letters”","Observation and transformation drawing “Imagining from a Shrimp”"]
@@ -210,8 +210,10 @@ window.SITE_EN = {
       year: "2006–2010",
       kind: "Artwork",
       org: "Ewha Womans University",
-      img: "work-tapestry.jpg",
-      img2: "work-paper-pulp.jpg",
+      pics: [
+        { src: "work-tapestry.jpg" },
+        { src: "work-paper-pulp.jpg" }
+      ],
       question: "Can soft thread and hard metal meet on a single surface?",
       text: "Works made while majoring in Fiber Art at Ewha Womans University. I welded iron onto tapestry, dyed silk, and built three-dimensional forms from paper pulp and cotton yarn.",
       made: ["“Welding on Tapestry,” iron, specialty yarn, hemp yarn, beads, 193×144cm, 2008","Two silk dye works (dye on silk, CMC, dyes, flour), 90×42cm · 90×64cm, 2008","Paper pulp and cotton yarn sculpture, 137×57×42cm, 2010","Ceramic small works series"]
@@ -445,7 +447,7 @@ window.SITE_EN = {
             ["2026.6.12.","Seoul Dongjak-Gwanak District Office of Education","Art Lesson Visualizing Social Issues with Data Algorithms","Teacher group open class (Computer Graphics), observed and interviewed by KICE researchers"],
             ["2026","","High School Credit System “Active Classes”","Participant in school program design"],
             ["2025","","Exploring Multiple Identities in the Digital Age: Self-Portrait","→ Teaching Materials “My Self-Portrait in the Digital Age”"],
-            ["2025","","Data-Based Interactive Media Art","→ Selected Works “Reading Paintings Through the Eyes of Data”"],
+            ["2025","","Data-Based Interactive Media Art","2025 AI and EdTech leading teacher lesson case"],
             ["2025.6.18.","Ministry of Education","Data-Based Information Visualization Lesson","Open class of the Ministry of Education AIEDAP master teacher research group, observed by teachers from other provinces"],
             ["2025.12.15.","Seoul Dongjak-Gwanak District Office of Education","Sharing Data-Based Media Art Outcomes Using the DAIR Model","AI Convergence Education subgroup of the teaching and assessment sharing teacher group"],
             ["2024.11.13.","Seoul Dongjak-Gwanak District Office of Education","Art Lesson Improving Visual Literacy through Natural Language Processing","Two open classes in the district: Computer Graphics “AI Convergence Art Lesson for Solving Social Problems”; Media Art analysis of Refik Anadol's work and expression through coding"],
@@ -560,7 +562,6 @@ window.SITE_EN = {
             ["2026","Seoul Education Research & Information Institute","Today's Gaze","Educational software that turns social data into visual rules for expression. Entered in the 20th Digital Education Research Competition; under review","","Web app · public data · private"],
             ["2026","Ministry of Education · KERIS","2nd-Cycle EdTech Project for Solving Current Education Issues","Participating teacher. Wrote the business plan and guide for a field trip platform with Labseed Inc."],
             ["2026","","Data Art Curation Kiosk","Kiosk site for exhibiting work from the STEAM club “Data Art Brush”","","Web app · private"],
-            ["2025","","Reading Paintings through the Eyes of Data","→ Selected Works","https://lab-datacanvas.web.app","Web app · Firebase · machine learning analysis module"],
             ["2025","","Today's Tasks","Web app and desktop widget that pull to-dos from work spreadsheets (runs without installation)","https://seoul-educaion.web.app","React·Vite · Firebase Functions · Electron"],
             ["2025.7.","","Art Insight: AI-Based Emotion Word Cloud","Extracts emotion words from appreciation essays into a word cloud","","Streamlit · KoNLPy · private"],
             ["2025","","Interview Question Search · Individual Counseling Cards for Early Admissions","Small tools for admissions counseling","","Web app · spreadsheet integration · private"]

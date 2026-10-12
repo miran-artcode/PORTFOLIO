@@ -7,7 +7,6 @@ window.QR = {
  "https://classroom2026103.web.app": "img/qr/763cd9b3c8.svg",
  "https://github.com/miran-artcode": "img/qr/0d9658e2fe.svg",
  "https://keris-data.web.app": "img/qr/a577a859e7.svg",
- "https://lab-datacanvas.web.app": "img/qr/3190524fa8.svg",
  "https://lecture-c5f9b.web.app": "img/qr/f2e1e8d85c.svg",
  "https://momentarchive-92831.web.app": "img/qr/d918823631.svg",
  "https://online.fliphtml5.com/axcok/qprb/": "img/qr/231ced2e88.svg",

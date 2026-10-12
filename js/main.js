@@ -18,7 +18,12 @@
   }[lang];
   const $ = (s, r = document) => r.querySelector(s);
   const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const IMG = (f) => "img/" + f;
+  /* 편집 화면 미리보기(?draft)에서는 아직 저장하지 않은 새 사진을 이 브라우저 보관함에서 꺼내 씁니다 */
+  const UPL = (() => { if (!/[?&]draft\b/.test(location.search)) return {}; try { return JSON.parse(localStorage.getItem("hm-uploads") || "{}"); } catch (e) { return {}; } })();
+  const IMG = (f) => UPL[f] || "img/" + f;
+  /* 선별 작업 사진: pics [{ src, cap, ratio, pos, wide }] — 예전 img·img2도 읽음 */
+  const picsOf = (p) => (p.pics || [p.img, p.img2]).filter(Boolean).map((m) => (typeof m === "string" ? { src: m } : m)).filter((m) => m.src);
+  const picStyle = (m) => (m.ratio ? `aspect-ratio:${m.ratio};object-fit:cover;` : "") + (m.pos ? `object-position:${m.pos};` : "");
   const host = (u) => u.replace(/^https?:\/\//, "").replace(/\/$/, "");
   const ext = (u, t) => `<a class="ul" href="${u}" target="_blank" rel="noopener">${esc(t)} ↗</a>`;
   const items = (n) => `<i>${n}</i> ${n === 1 ? "item" : "items"}`;
@@ -62,11 +67,11 @@
 
   /* 선별 작업 */
   $("#projects").innerHTML = S.works.map((p) => {
-    const pics = [p.img, p.img2].filter(Boolean);
+    const pics = picsOf(p), lay = ["left", "below"].includes(p.layout) ? " pic-" + p.layout : "";
     const facts = p.facts ? `<dl class="facts">${p.facts.map((f) => `<div><dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd></div>`).join("")}</dl>` : "";
     const lists = p.lists ? p.lists.map((l) => `<div class="sub"><span class="label">${esc(l.title)}</span><ul class="made">${l.items.map((m) => `<li>${esc(m)}</li>`).join("")}</ul></div>`).join("") : "";
     return `
-    <article class="proj grid${pics.length ? "" : " no-img"}" id="${p.id}">
+    <article class="proj grid${pics.length ? lay : " no-img"}" id="${p.id}">
       <div class="meta"><span class="label">${esc(p.year)}</span><span class="label k">${esc(p.kind)}</span></div>
       <div class="txt">
         ${p.org ? `<p class="org">${esc(p.org)}</p>` : ""}
@@ -79,7 +84,7 @@
         ${p.facts ? "" : `<ul class="made">${p.made.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>`}
         ${p.links ? linkBlock(p.links) : ""}
       </div>
-      ${pics.length ? `<div class="pics n${pics.length}">${pics.map((f) => `<figure><img loading="lazy" src="${IMG(f)}" alt="${esc(p.title)}"></figure>`).join("")}</div>` : ""}
+      ${pics.length ? `<div class="pics n${Math.min(pics.length, 3)}">${pics.map((m) => `<figure${m.wide ? ' class="wide"' : ""}><img loading="lazy" src="${IMG(m.src)}" alt="${esc(m.cap || p.title)}"${picStyle(m) ? ` style="${picStyle(m)}"` : ""}>${m.cap ? `<figcaption>${esc(m.cap)}</figcaption>` : ""}</figure>`).join("")}</div>` : ""}
     </article>`;
   }).join("");
 

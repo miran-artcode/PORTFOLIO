@@ -40,6 +40,83 @@
   };
   const draftKey = () => "hm-draft-" + S.lang;
 
+  /* ── 사진 ────────────────────────────────── */
+  // 새로 올린 사진은 저장하기 전까지 이 브라우저(hm-uploads)에 보관하고, 저장할 때 img/에 함께 올립니다.
+  S.uploads = (() => { try { return JSON.parse(store.get("hm-uploads") || "{}"); } catch (e) { return {}; } })();
+  S.imgList = null; // 저장소 img/ 안의 사진 이름
+  S.recent = {};    // 방금 저장한 새 사진(공개 사이트에 올라오기 전까지 화면에 보이게)
+  const keepUploads = () => { if (!store.set("hm-uploads", JSON.stringify(S.uploads))) say("새 사진이 많아 이 브라우저 보관함이 찼습니다. 지금 한 번 <b>저장하기</b>를 누르면 비워집니다. (미리보기에서는 일부 새 사진이 안 보일 수 있습니다)", "warn"); };
+  const imgSrc = (f) => (f ? S.uploads[f] || S.recent[f] || "img/" + f : "");
+  const RATIOS = [["", "원래 비율"], ["4/3", "가로 4:3"], ["16/9", "가로 16:9"], ["1/1", "정사각형"], ["3/4", "세로 3:4"]];
+  const LAYOUTS = [["", "글 오른쪽 (기본)"], ["left", "글 왼쪽"], ["below", "글 아래에 넓게"]];
+  async function loadImgList(force) {
+    if (S.imgList && !force) return S.imgList;
+    try {
+      const h = { Accept: "application/vnd.github+json" };
+      if (S.token) h.Authorization = "Bearer " + S.token;
+      const r = await fetch(`https://api.github.com/repos/${REPO}/contents/img?ref=${BRANCH}&t=${Date.now()}`, { headers: h, cache: "no-store" });
+      const j = r.ok ? await r.json() : [];
+      S.imgList = j.filter((x) => x.type === "file" && /\.(jpe?g|png|gif|webp|svg)$/i.test(x.name)).map((x) => x.name).sort();
+    } catch (e) { S.imgList = []; }
+    return S.imgList;
+  }
+  async function addUpload(file) {
+    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const base = file.name.replace(/\.[^.]+$/, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 32);
+    const keepRaw = /svg|gif/.test(file.type);
+    const ext = keepRaw ? (file.type.includes("svg") ? "svg" : "gif") : "jpg";
+    const taken = new Set([...Object.keys(S.uploads), ...(S.imgList || [])]);
+    let name;
+    do name = `up-${stamp}-${base || "photo"}-${Math.random().toString(36).slice(2, 6)}.${ext}`; while (taken.has(name));
+    let url;
+    if (keepRaw) url = await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(file); });
+    else {
+      const bmp = await createImageBitmap(file);
+      const k = Math.min(1, 1800 / Math.max(bmp.width, bmp.height)), cv = document.createElement("canvas");
+      cv.width = Math.round(bmp.width * k); cv.height = Math.round(bmp.height * k);
+      const g = cv.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(bmp, 0, 0, cv.width, cv.height);
+      url = cv.toDataURL("image/jpeg", 0.85);
+    }
+    S.uploads[name] = url; keepUploads();
+    return name;
+  }
+
+  // 사진 고르기 창: 새로 올리기 + 이미 있는 사진에서 고르기
+  let pickCb = null;
+  async function openPicker(title, cb, multi) {
+    pickCb = cb;
+    const m = $("#picker");
+    $("#pk-title").textContent = title;
+    $("#pk-file").multiple = !!multi;
+    m.hidden = false;
+    $("#pk-grid").innerHTML = `<p class="hint">사진 목록을 불러오는 중…</p>`;
+    const list = await loadImgList();
+    const ups = Object.keys(S.uploads);
+    const cell = (n, isNew) => `<button type="button" class="pk-cell" data-pick="${esc(n)}" title="${esc(n)}"><img loading="lazy" src="${esc(imgSrc(n))}" alt=""><span>${isNew ? "새 사진 · " : ""}${esc(n)}</span></button>`;
+    $("#pk-grid").innerHTML = (ups.length || list.length) ? ups.map((n) => cell(n, true)).join("") + list.filter((n) => !ups.includes(n) && !n.startsWith("qr")).map((n) => cell(n)).join("") : `<p class="hint">사진 목록을 불러오지 못했습니다. 위에서 새 사진을 올려 주세요.</p>`;
+  }
+  const closePicker = () => { $("#picker").hidden = true; pickCb = null; $("#pk-file").value = ""; };
+  function picksDone(names) { const cb = pickCb; closePicker(); if (cb && names.length) cb(names); }
+
+  function picsHTML(i) {
+    const w = S.data.works[i], ps = w.pics || [], b = ["works", i];
+    const cards = ps.map((m, k) => {
+      const p = P([...b, "pics", k]), pos = (m.pos || "50% 50%").split(" ");
+      return `<div class="pic" data-w="${i}" data-k="${k}">
+        <div class="thumb${m.ratio ? " crop" : ""}" style="${m.ratio ? `aspect-ratio:${m.ratio}` : ""}"><img src="${esc(imgSrc(m.src))}" alt="" style="${m.ratio ? `object-fit:cover;object-position:${esc(m.pos || "50% 50%")}` : ""}">${m.ratio ? `<i class="dot" style="left:${esc(pos[0])};top:${esc(pos[1] || "50%")}"></i>` : ""}</div>
+        <div class="pic-name">${S.uploads[m.src] ? "<b>새 사진</b> · " : ""}${esc(m.src)}</div>
+        <label class="f"><span class="lb">보이는 비율</span><select data-p="${p}.ratio" data-t="text">${RATIOS.map(([v, t]) => `<option value="${v}"${(m.ratio || "") === v ? " selected" : ""}>${t}</option>`).join("")}</select></label>
+        <p class="hint">${m.ratio ? "사진을 누르면 그 부분이 가운데 오도록 맞춥니다." : "비율을 고르면 잘리는 위치를 정할 수 있습니다."}</p>
+        ${fld([...b, "pics", k, "cap"], C("사진 설명 (없으면 비움)", "cap", "l"))}
+        <label class="chk"><input type="checkbox" data-p="${p}.wide" data-t="bool"${m.wide ? " checked" : ""}> 한 줄 전체로 크게</label>
+        <div class="ops"><button type="button" data-act="pic-prev" title="앞으로">← 앞으로</button><button type="button" data-act="pic-next" title="뒤로">뒤로 →</button><button type="button" data-act="pic-swap">바꾸기</button><button type="button" data-act="pic-del">빼기</button></div>
+      </div>`;
+    }).join("");
+    return `<div class="sub"><h4>사진 (순서대로 보입니다)</h4>
+      <div class="fields">${`<label class="f"><span class="lb">사진 위치</span><select data-p="${P([...b, "layout"])}" data-t="text">${LAYOUTS.map(([v, t]) => `<option value="${v}"${(w.layout || "") === v ? " selected" : ""}>${t}</option>`).join("")}</select></label>`}</div>
+      <div class="pics-ed">${cards}<button type="button" class="pic-add" data-act="pic-add" data-w="${i}">+ 사진 추가<small>올리기 · 고르기</small></button></div></div>`;
+  }
+
   /* ── 칸 모양 ─────────────────────────────── */
   const C = (label, key, w = "m", t = "text") => ({ label, key, w, t });
   const W = { s: "7.5em", m: "minmax(9em,1fr)", l: "minmax(11em,1.4fr)", xl: "minmax(14em,2.2fr)" };
@@ -51,7 +128,7 @@
     facts: { cols: [C("항목", 0, "m"), C("내용", 1, "xl", "long")], blank: () => ["", ""] },
     links: { cols: [C("종류 (site·doc·article)", 0, "s"), C("제목", 1, "l"), C("주소", 2, "l")], blank: () => ["site", "", ""] },
     lists: { cols: [C("제목", "title", "l"), C("항목 (한 줄에 하나)", "items", "xl", "lines")], blank: () => ({ title: "", items: [] }) },
-    gallery: { cols: [C("이미지 파일", "img", "m"), C("설명", "cap", "xl")], blank: () => ({ img: "", cap: "" }) }
+    gallery: { cols: [C("사진", "img", "l", "image"), C("설명", "cap", "xl")], blank: () => ({ img: "", cap: "" }) }
   };
   const CARD_FIELD = {
     date: C("날짜", "date", "s"), aud: C("대상", "aud", "s"), org: C("기관", "org", "m"), title: C("제목", "title", "l"),
@@ -78,6 +155,10 @@
   /* ── 화면 조각 ───────────────────────────── */
   function fld(path, col, extraCls = "", inTable = false) {
     const raw = getAt(S.data, path), t0 = col.t || "text", t = inTable && t0 === "text" ? "long" : t0;
+    if (t0 === "image") {
+      const p = P(path);
+      return `<label class="f imgf"><span class="lb">${esc(col.label)}</span><span class="imgrow">${raw ? `<img class="mini" src="${esc(imgSrc(raw))}" alt="">` : `<span class="mini none">없음</span>`}<input data-p="${p}" data-t="text" aria-label="${esc(col.label)} 파일 이름" value="${esc(raw ?? "")}"><button type="button" data-act="img-pick" data-target="${p}">고르기·올리기</button></span></label>`;
+    }
     const val = t === "pairs" ? (Array.isArray(raw) ? raw.map((x) => (Array.isArray(x) ? x.join(" | ") : x)).join("\n") : raw ?? "")
       : t === "lines" ? (Array.isArray(raw) ? raw.join("\n") : raw ?? "") : raw ?? "";
     const p = P(path), lab = esc(col.label);
@@ -124,9 +205,9 @@
       const parts = [
         `<div class="fields">`,
         F("title", "제목", "l"), F("en", "영문 제목", "l"), F("year", "연도", "s"), F("kind", "종류"), F("org", "기관"),
-        F("img", "대표 이미지 파일"), F("img2", "두 번째 이미지 파일"),
         F("question", "질문", "xl", "long", "wide"), F("text", "설명", "xl", "long", "wide"), F("made", "만든 것 (한 줄에 하나)", "xl", "lines", "wide"),
         `</div>`,
+        picsHTML(i),
         `<div class="sub"><h4>사실 정보 (항목 · 내용)</h4>${table([...b, "facts"], SCHEMAS.facts, { top: false })}</div>`,
         w.lists ? `<div class="sub"><h4>목록</h4>${table([...b, "lists"], SCHEMAS.lists, { top: false })}</div>` : "",
         `<div class="sub"><h4>링크 (QR은 저장할 때 자동으로 만듭니다)</h4>${table([...b, "links"], SCHEMAS.links, { top: false })}</div>`
@@ -159,7 +240,7 @@
     const secs = [["basic", "기본 정보", basicHTML()]];
     for (const id of order) {
       if (id === "works" && D.works) secs.push(["works", (D.heads && D.heads.works && D.heads.works.title) || "선별 작업", worksHTML()]);
-      else if (id === "images" && D.gallery) { SCH.set("gallery", SCHEMAS.gallery); secs.push(["images", (D.heads && D.heads.images && D.heads.images.title) || "이미지", table(["gallery"], SCHEMAS.gallery)]); }
+      else if (id === "images" && D.gallery) { SCH.set("gallery", SCHEMAS.gallery); secs.push(["images", (D.heads && D.heads.images && D.heads.images.title) || "이미지", `<div class="adds"><button type="button" class="strong" data-act="gal-add">+ 사진 여러 장 한꺼번에 추가</button></div>` + table(["gallery"], SCHEMAS.gallery)]); }
       else {
         const ci = (D.chapters || []).findIndex((c) => c.id === id);
         if (ci >= 0) secs.push([id, D.chapters[ci].ko || D.chapters[ci].en || id, chapterHTML(ci)]);
@@ -218,7 +299,7 @@
     for (let attempt = 0; attempt < 3; attempt++) {
       const ref = await gh(`/repos/${REPO}/git/ref/heads/${BRANCH}`);
       const head = await gh(`/repos/${REPO}/git/commits/${ref.object.sha}`);
-      const tree = await gh(`/repos/${REPO}/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: head.tree.sha, tree: files.map((f) => ({ path: f.path, mode: "100644", type: "blob", content: f.content })) }) });
+      const tree = await gh(`/repos/${REPO}/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: head.tree.sha, tree: files.map((f) => (f.sha ? { path: f.path, mode: "100644", type: "blob", sha: f.sha } : { path: f.path, mode: "100644", type: "blob", content: f.content })) }) });
       const commit = await gh(`/repos/${REPO}/git/commits`, { method: "POST", body: JSON.stringify({ message, tree: tree.sha, parents: [ref.object.sha] }) });
       try { await gh(`/repos/${REPO}/git/refs/heads/${BRANCH}`, { method: "PATCH", body: JSON.stringify({ sha: commit.sha }) }); return commit; }
       catch (e) { if (e.status !== 422 || attempt === 2) throw e; } // 그 사이 다른 커밋이 들어오면 다시 시도
@@ -276,6 +357,17 @@
       if (w.made) w.made = lines(w.made);
       for (const k of ["facts", "links"]) if (w[k]) w[k] = w[k].filter((r) => !isEmpty(r)).map((r) => trimRow(r, k === "links" ? 3 : 2));
       if (w.lists) w.lists = w.lists.filter((l) => !isEmpty(l)).map((l) => ({ ...l, items: lines(l.items) }));
+      if (w.pics) {
+        w.pics = w.pics.filter((m) => m && m.src && String(m.src).trim()).map((m) => {
+          const o = { src: String(m.src).trim() };
+          for (const k of ["cap", "ratio", "pos"]) if (m[k] && String(m[k]).trim()) o[k] = String(m[k]).trim();
+          if (m.wide) o.wide = true;
+          if (!o.ratio) delete o.pos;
+          return o;
+        });
+        if (!w.pics.length) delete w.pics;
+      }
+      if (!w.layout) delete w.layout;
       if (w.facts && !w.facts.length) delete w.facts;
       if (w.lists && !w.lists.length) delete w.lists;
     });
@@ -317,6 +409,27 @@
     return out;
   }
 
+  // 선별 작업의 사진·사진 위치는 두 언어가 같게: 저장할 때 다른 언어 파일의 같은 작업(id)에도 옮김(사진 설명은 언어별로 둠)
+  async function mirrorPics(out) {
+    const O = S.lang === "ko" ? FILES.en : FILES.ko;
+    let cur;
+    try { cur = await getFile(O.path); } catch (e) { return null; }
+    const r = SiteFile.read(cur.text, O.v);
+    let n = 0;
+    for (const w of r.data.works || []) {
+      const mine = (out.works || []).find((x) => x.id === w.id);
+      if (!mine) continue;
+      const before = JSON.stringify([w.pics, w.img, w.img2, w.layout]);
+      const capOf = Object.fromEntries((w.pics || []).map((m) => [m.src, m.cap]));
+      if (mine.pics) w.pics = mine.pics.map((m) => { const o = { src: m.src }; if (capOf[m.src]) o.cap = capOf[m.src]; for (const k of ["ratio", "pos", "wide"]) if (m[k]) o[k] = m[k]; return o; });
+      else delete w.pics;
+      delete w.img; delete w.img2;
+      if (mine.layout) w.layout = mine.layout; else delete w.layout;
+      if (JSON.stringify([w.pics, w.img, w.img2, w.layout]) !== before) n++;
+    }
+    return n ? { path: O.path, content: SiteFile.write(r.header, O.v, r.data) } : null;
+  }
+
   async function save() {
     if (!S.token) { openConnect("저장하려면 GitHub 연결이 필요합니다. 처음 한 번만 하면 됩니다."); return; }
     const F = FILES[S.lang];
@@ -333,8 +446,19 @@
       if ("updated" in out) out.updated = today();
       const text = SiteFile.write(S.base.header, F.v, out);
       SiteFile.read(text, F.v); // 다시 읽혀야 저장
-      const files = [{ path: F.path, content: text }, ...(await qrFiles(text))];
-      await commitFiles(files, "사이트에서 직접 수정: " + summary(JSON.parse(S.baseJSON), out));
+      // 새 사진: 이번 내용에 쓰인 것만 img/에 올림
+      const used = Object.keys(S.uploads).filter((n) => text.includes(n));
+      const imgFiles = [];
+      for (const n of used) {
+        const bl = await gh(`/repos/${REPO}/git/blobs`, { method: "POST", body: JSON.stringify({ content: S.uploads[n].split(",")[1], encoding: "base64" }) });
+        imgFiles.push({ path: "img/" + n, sha: bl.sha });
+      }
+      const other = await mirrorPics(out);
+      const files = [{ path: F.path, content: text }, ...(other ? [other] : []), ...imgFiles, ...(await qrFiles(text))];
+      await commitFiles(files, "사이트에서 직접 수정: " + summary(JSON.parse(S.baseJSON), out) + (used.length ? ` · 새 사진 ${used.length}장` : ""));
+      for (const n of used) { S.recent[n] = S.uploads[n]; delete S.uploads[n]; }
+      keepUploads();
+      if (S.imgList) S.imgList.push(...used);
       const fresh = await getFile(F.path);
       S.base = { sha: fresh.sha, header: S.base.header, text: fresh.text };
       S.data = out; S.baseJSON = JSON.stringify(out); S.force = false;
@@ -420,16 +544,61 @@
       if (el.dataset.t === "lines") v = v.split("\n").filter((s) => s.trim());
       if (el.dataset.t === "pairs") v = v.split("\n").filter((s) => s.trim()).map((l) => { const i = l.indexOf("|"); return i < 0 ? [l.trim(), ""] : [l.slice(0, i).trim(), l.slice(i + 1).trim()]; });
       if (el.dataset.t === "num") { const n = Number(v); v = v.trim() !== "" && !isNaN(n) ? n : v; }
+      if (el.dataset.t === "bool") v = el.checked;
       setAt(S.data, parseP(el.dataset.p), v);
       changed();
+      // 고르는 칸·사진 이름 칸은 바로 화면(미리 보기 그림)에 반영
+      if (el.tagName === "SELECT" || el.dataset.t === "bool") rerender();
+      else if (el.closest(".imgf")) { const im = $(".mini", el.closest(".imgf")); if (im && im.tagName === "IMG") im.src = imgSrc(v); }
       return;
     }
     if (e.target.id === "q") applySearch();
   });
 
   document.addEventListener("click", async (e) => {
+    // 사진을 누르면 그 지점이 가운데 오도록(잘리는 위치)
+    const th = e.target.closest(".thumb.crop");
+    if (th) {
+      const pc = th.closest(".pic"), r = th.getBoundingClientRect();
+      const x = Math.round(Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100)));
+      const y = Math.round(Math.min(100, Math.max(0, ((e.clientY - r.top) / r.height) * 100)));
+      S.data.works[+pc.dataset.w].pics[+pc.dataset.k].pos = `${x}% ${y}%`;
+      rerender(); changed(); return;
+    }
+    const pk = e.target.closest("[data-pick]");
+    if (pk) { picksDone([pk.dataset.pick]); return; }
+    if (e.target.id === "picker") { closePicker(); return; }
     const b = e.target.closest("button[data-act], button[data-lang], button[data-sec]");
     if (!b) return;
+    const pa = b.dataset.act || "";
+    if (pa === "pk-close") { closePicker(); return; }
+    if (pa === "lib") { openPicker("사진 보관함 · 누르면 파일 이름을 복사합니다", (ns) => { navigator.clipboard && navigator.clipboard.writeText(ns[0]).catch(() => {}); say(`<b>${esc(ns[0])}</b> 이름을 복사했습니다. 카드의 이미지 칸에 <code>${esc(ns[0])} | 설명</code>처럼 붙여 넣으세요.`, "ok"); }, false); return; }
+    if (pa === "img-pick") {
+      const tp = parseP(b.dataset.target);
+      openPicker("사진 고르기", (ns) => { setAt(S.data, tp, ns[0]); rerender(); changed(); }, false); return;
+    }
+    if (pa === "gal-add") {
+      openPicker("이미지 구역에 사진 추가 (여러 장 올릴 수 있습니다)", (ns) => {
+        S.data.gallery.unshift(...ns.map((n) => ({ img: n, cap: "" })));
+        rerender(() => { const r = $(`.row[data-arr="gallery"][data-i="0"] textarea, .row[data-arr="gallery"][data-i="0"] input:not([data-t])`); const c = $$(`.row[data-arr="gallery"][data-i="0"] [data-p$=".cap"]`)[0]; (c || r) && (c || r).focus(); });
+        changed(); say("맨 위에 사진을 넣었습니다. 설명을 쓰고, ↑↓ 단추로 자리를 옮기세요.", "ok");
+      }, true); return;
+    }
+    if (pa.startsWith("pic-")) {
+      const wi = +(b.dataset.w ?? b.closest(".pic").dataset.w), w = S.data.works[wi];
+      if (pa === "pic-add") {
+        openPicker(`「${w.title || "선별 작업"}」에 사진 추가`, (ns) => { w.pics = [...(w.pics || []), ...ns.map((n) => ({ src: n }))]; rerender(); changed(); }, true); return;
+      }
+      const k = +b.closest(".pic").dataset.k, ps = w.pics;
+      if (pa === "pic-prev" && k > 0) [ps[k - 1], ps[k]] = [ps[k], ps[k - 1]];
+      else if (pa === "pic-next" && k < ps.length - 1) [ps[k + 1], ps[k]] = [ps[k], ps[k + 1]];
+      else if (pa === "pic-swap") { openPicker("이 자리에 넣을 사진", (ns) => { ps[k] = { ...ps[k], src: ns[0] }; rerender(); changed(); }, false); return; }
+      else if (pa === "pic-del") {
+        if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent = "정말 빼기"; setTimeout(() => { b.classList.remove("arm"); b.textContent = "빼기"; }, 3000); return; }
+        ps.splice(k, 1);
+      } else return;
+      rerender(); changed(); return;
+    }
     if (b.dataset.lang) {
       if (b.dataset.lang === S.lang) return;
       if (isDirty()) store.set(draftKey(), JSON.stringify({ sha: S.base.sha, at: Date.now(), data: S.data }));
@@ -460,7 +629,7 @@
       rerender(); changed(); return;
     }
     if (act === "add-work") {
-      S.data.works.push({ id: "work-" + Date.now().toString(36), title: "", en: "", year: "", kind: "", org: "", img: "", question: "", text: "", made: [], links: [] });
+      S.data.works.push({ id: "work-" + Date.now().toString(36), title: "", en: "", year: "", kind: "", org: "", pics: [], question: "", text: "", made: [], links: [] });
       rerender(() => { const w = $$(".work").pop(); if (w) { w.scrollIntoView({ block: "start" }); $("input", w).focus(); } });
       changed(); return;
     }
@@ -506,6 +675,24 @@
       rerender(); changed();
     }
   }
+
+  // 사진 고르기 창: 파일 고르기·끌어다 놓기
+  async function takeFiles(list) {
+    const fs = [...list].filter((f) => /^image\//.test(f.type));
+    if (!fs.length) return;
+    $("#pk-busy").hidden = false;
+    const names = [];
+    try { for (const f of fs) names.push(await addUpload(f)); }
+    catch (err) { say("사진을 읽지 못했습니다. JPG·PNG 파일인지 확인해 주세요. (" + esc(err.message) + ")", "bad"); }
+    $("#pk-busy").hidden = true;
+    picksDone(names);
+  }
+  $("#pk-file").addEventListener("change", (e) => takeFiles(e.target.files));
+  const drop = $("#pk-drop");
+  drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+  drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); takeFiles(e.dataTransfer.files); });
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#picker").hidden) closePicker(); });
 
   $("#save").addEventListener("click", save);
   $("#preview").addEventListener("click", () => {
