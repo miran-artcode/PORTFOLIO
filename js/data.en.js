@@ -247,6 +247,7 @@ window.SITE_EN = {
           title: "Education",
           items: [
             ["2022.8.–2026.2.","","Sungkyunkwan University, Graduate School of Education, M.Ed.","AI Convergence Education (selected for SMOE-affiliated specialist program)"],
+            ["2014.9.–2016.9.","","Ewha Womans University, Graduate School of Design, master's coursework completed","Advertising & Brand Design"],
             ["2011.3.–2014.2.","","Ewha Womans University, Graduate School of Education, M.Ed.","Art Education"],
             ["2006.3.–2011.2.","","Ewha Womans University, College of Art & Design","B.F.A. in Fiber Art, double major in Art History (B.A.), minor in Business Administration"],
             ["2002.3.–2005.2.","","Sunhwa Arts High School","Western Painting"],
