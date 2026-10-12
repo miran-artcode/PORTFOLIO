@@ -2095,6 +2095,12 @@ window.SITE_EN = {
        "specialist instructor · 3 hours"
       ],
       [
+       "Teachers",
+       "Gwacheon Jungang High School",
+       "Vibe Coding and AI for Teaching and School Work",
+       "5.15. · 5.19. · two teacher trainings"
+      ],
+      [
        "Instructors",
        "KERIS · SNU Center for Learning Sciences",
        "Instructor Workshop for Lead Teacher Training",
