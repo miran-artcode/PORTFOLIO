@@ -85,7 +85,7 @@
   .grp > header .gn { flex: 1 1 300px; }
   .kind { font-size: 11px; color: var(--ink-3); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; margin-bottom: 6px; }
 
-  .row { display: grid; grid-template-columns: minmax(0, 1fr) 128px; gap: 8px; align-items: start; padding: 3px 0; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 8px; align-items: start; padding: 3px 0; }
   .row .cells { display: grid; gap: 6px; min-width: 0; }
   .row .cells .lb { display: none; }
   .row.head { padding-bottom: 0; }
@@ -95,7 +95,14 @@
   .ops { display: flex; gap: 4px; padding-top: 2px; }
   .ops button, .adds button { border: 1px solid var(--line); background: var(--bg); border-radius: 5px; padding: 3px 8px; font-size: 12px; color: var(--ink-2); }
   .ops button:hover, .adds button:hover { border-color: var(--ink); color: var(--ink); }
-  .ops button.arm { border-color: var(--bad); color: var(--bad); }
+  .ops button.arm, .sec-ops button.arm { border-color: var(--bad); color: var(--bad); }
+  .sec-h { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--ink); margin: 8px 0 14px; }
+  .sec-h h2 { border: 0; margin: 0; padding-bottom: 6px; }
+  .sec-ops { display: flex; gap: 6px; padding-bottom: 8px; }
+  .sec-ops button { border: 1px solid var(--ink); background: var(--bg); border-radius: 999px; padding: 4px 12px; font-size: 12px; }
+  .sec-note { font-size: 12px; color: var(--ink-3); padding-bottom: 8px; }
+  .adds.big { margin: 8px 0 40px; align-items: center; }
+  .adds.big button { border: 1px solid var(--ink); color: var(--ink); padding: 8px 16px; font-size: 14px; border-radius: 999px; }
   .adds { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 2px; }
 
   .work { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
@@ -130,11 +137,12 @@
 <section id="connect" hidden>
   <h3>GitHub 연결 (이 컴퓨터에서 처음 한 번)</h3>
   <ol>
-    <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">토큰 만들기 화면 열기 ↗</a> (miran-artcode 계정으로 로그인)</li>
-    <li><b>Token name</b>: <code>포트폴리오 편집</code>, <b>Expiration</b>: 원하는 기간(예: 1년)</li>
-    <li><b>Repository access</b>: <code>Only select repositories</code> → <code>PORTFOLIO</code> 하나만 고르기</li>
-    <li><b>Permissions → Repository permissions → Contents</b>: <code>Read and write</code></li>
-    <li>맨 아래 <b>Generate token</b> → 나온 값(<code>github_pat_…</code>)을 복사해 아래 칸에 붙여 넣기</li>
+    <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">토큰 만들기 화면 열기 ↗</a> (miran-artcode 계정으로 로그인된 상태여야 합니다)</li>
+    <li><b>Token name</b>: 영어로 <code>portfolio-edit</code> (한글 이름은 오류가 날 수 있습니다)</li>
+    <li><b>Resource owner</b>: <code>miran-artcode</code>, <b>Expiration</b>: <code>366 days</code> 또는 원하는 날짜</li>
+    <li><b>Repository access</b>: <code>Only select repositories</code> → 목록에서 <code>miran-artcode/PORTFOLIO</code> 고르기</li>
+    <li><b>Permissions</b>: <code>Add permissions</code>(또는 Repository permissions) → <code>Contents</code> → 오른쪽을 <code>Read and write</code>로. Metadata는 저절로 Read-only가 붙습니다.</li>
+    <li>맨 아래 <b>Generate token</b> → 확인 창에서 한 번 더 <b>Generate token</b> → 나온 값(<code>github_pat_…</code>)을 옆의 복사 단추로 복사해 아래 칸에 붙여 넣기. 이 값은 한 번만 보이니 연결 전에 창을 닫지 마세요.</li>
   </ol>
   <div class="tokrow"><input id="tok" type="password" placeholder="github_pat_…" autocomplete="off" aria-label="GitHub 토큰"><button type="button" class="btn primary" id="tok-save">연결</button><button type="button" class="btn" id="tok-forget">이 컴퓨터에서 연결 지우기</button></div>
   <p id="connect-msg" role="status"></p>

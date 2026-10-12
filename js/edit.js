@@ -86,7 +86,7 @@
       : `<input data-p="${p}" data-t="${t}" aria-label="${lab}" value="${esc(val)}"${t === "num" ? ' inputmode="numeric"' : ""}>`;
     return `<label class="f ${extraCls}"><span class="lb">${lab}</span>${ctl}</label>`;
   }
-  const ops = (what) => `<div class="ops"><button type="button" data-act="up" title="위로">↑</button><button type="button" data-act="down" title="아래로">↓</button><button type="button" data-act="del" title="${what} 삭제">삭제</button></div>`;
+  const ops = (what) => `<div class="ops"><button type="button" data-act="top" title="${what}을 맨 위로">⤒</button><button type="button" data-act="up" title="${what}을 한 칸 위로">↑ 위</button><button type="button" data-act="down" title="${what}을 한 칸 아래로">↓ 아래</button><button type="button" data-act="bottom" title="${what}을 맨 아래로">⤓</button><button type="button" data-act="del" title="${what} 삭제">삭제</button></div>`;
   const cols = (sch) => sch.cols.map((c) => W[c.w]).join(" ");
 
   function table(arrPath, sch, opts = {}) {
@@ -138,7 +138,7 @@
 
   function chapterHTML(ci) {
     const c = S.data.chapters[ci], base = ["chapters", ci];
-    const head = `<div class="fields">${fld([...base, "ko"], C("구역 제목", "ko"))}${fld([...base, "blurb"], C("구역 설명", "blurb", "xl", "long"), "wide")}</div>`;
+    const head = `<div class="fields">${fld([...base, "ko"], C("구역 제목", "ko"))}${fld([...base, "en"], C("메뉴·영문 이름", "en"))}${fld([...base, "blurb"], C("구역 설명", "blurb", "xl", "long"), "wide")}</div>`;
     const groups = (c.groups || []).map((g, gi) => {
       const gp = [...base, "groups", gi];
       const kindLabel = { lectures: "강의 목록", threads: "흐름 도식", cards: "카드" }[g.kind] || "";
@@ -165,8 +165,16 @@
         if (ci >= 0) secs.push([id, D.chapters[ci].ko || D.chapters[ci].en || id, chapterHTML(ci)]);
       }
     }
+    const canOrder = S.lang === "ko" && Array.isArray(D.order);
+    const secOps = (id) => {
+      if (id === "basic") return "";
+      if (!canOrder) return `<span class="sec-note">구역 순서·추가는 한국어에서 합니다</span>`;
+      const isCh = (D.chapters || []).some((c) => c.id === id);
+      return `<div class="sec-ops"><button type="button" data-sec="up" data-id="${id}">↑ 구역을 위로</button><button type="button" data-sec="down" data-id="${id}">↓ 구역을 아래로</button>${isCh ? `<button type="button" data-sec="del" data-id="${id}">이 구역 삭제</button>` : ""}</div>`;
+    };
     $("#side").innerHTML = secs.map(([id, t]) => `<a href="#s-${id}">${esc(t)}</a>`).join("");
-    $("#ed").innerHTML = secs.map(([id, t, h]) => `<section class="sec" id="s-${id}"><h2>${esc(t)}</h2>${h}</section>`).join("");
+    $("#ed").innerHTML = secs.map(([id, t, h]) => `<section class="sec" id="s-${id}"><div class="sec-h"><h2>${esc(t)}</h2>${secOps(id)}</div>${h}</section>`).join("")
+      + (canOrder ? `<div class="adds big"><button type="button" data-sec="add">+ 새 구역(가지) 추가</button><span class="hint">예: 「전시」, 「수상」처럼 큰 갈래를 하나 더 만듭니다. 영어판에는 영어 화면에서 따로 채웁니다.</span></div>` : "");
     applySearch();
   }
 
@@ -357,11 +365,15 @@
     $("#tok").focus();
   }
   async function connect() {
-    const t = $("#tok").value.trim();
-    if (!t) return;
+    const t = $("#tok").value.replace(/^[\s"'`]+|[\s"'`]+$/g, "").replace(/^(Bearer|token)\s+/i, "");
+    if (!t) { $("#connect-msg").textContent = "토큰 칸이 비어 있습니다."; return; }
+    if (!/^(github_pat_|ghp_)/.test(t)) { $("#connect-msg").textContent = "붙여 넣은 값이 GitHub 토큰 모양이 아닙니다. github_pat_ 로 시작하는 값을 통째로 복사해 주세요."; return; }
     S.token = t;
+    $("#connect-msg").textContent = "확인하는 중…";
+    let step = "토큰 확인";
     try {
-      const me = await gh("/user").catch(() => null);
+      const me = await gh("/user").catch((e) => { if (e.status === 401) throw e; return null; });
+      step = "PORTFOLIO 저장소 읽기";
       await gh(`/repos/${REPO}/contents/js/data.js?ref=${BRANCH}`);
       store.set("hm-gh-token", t);
       S.login = me ? me.login : "";
@@ -373,7 +385,12 @@
       say("GitHub에 연결했습니다. 이제 저장할 수 있습니다.", "ok");
     } catch (e) {
       S.token = store.get("hm-gh-token") || "";
-      $("#connect-msg").textContent = e.status === 401 ? "토큰이 맞지 않습니다. 복사한 값을 다시 붙여 넣어 주세요." : "이 토큰으로 PORTFOLIO 저장소를 읽지 못했습니다. 저장소 선택과 권한을 확인해 주세요.";
+      const why = e.net ? "인터넷 연결을 확인해 주세요."
+        : e.status === 401 ? "토큰 값이 맞지 않거나 기간이 끝났습니다. 새로 만든 값을 통째로 붙여 넣어 주세요."
+        : e.status === 404 ? "이 토큰이 PORTFOLIO 저장소를 볼 수 없습니다. 토큰 만들 때 Repository access에서 PORTFOLIO를 골랐는지, Resource owner가 miran-artcode인지 확인해 주세요."
+        : e.status === 403 ? "권한이 모자랍니다. Permissions에서 Contents를 추가하고 Read and write로 바꿔 주세요."
+        : "";
+      $("#connect-msg").textContent = `[${step}] 실패. ${why} (GitHub 응답: ${e.message.slice(0, 120)})`;
     }
   }
   function syncConn() {
@@ -411,7 +428,7 @@
   });
 
   document.addEventListener("click", async (e) => {
-    const b = e.target.closest("button[data-act], button[data-lang]");
+    const b = e.target.closest("button[data-act], button[data-lang], button[data-sec]");
     if (!b) return;
     if (b.dataset.lang) {
       if (b.dataset.lang === S.lang) return;
@@ -420,6 +437,7 @@
       return;
     }
     const act = b.dataset.act;
+    if (b.dataset.sec) { secAction(b); return; }
     if (act === "draft-use") { S.data = S.pendingDraft.data; say(""); rerender(); changed(); return; }
     if (act === "draft-drop") { store.del(draftKey()); say(""); load(S.lang, { dropDraft: true }); return; }
     if (act === "force-save") { S.force = true; say(""); save(); return; }
@@ -449,7 +467,9 @@
     const item = b.closest("[data-arr][data-i]");
     if (!item) return;
     const arr = getAt(S.data, parseP(item.dataset.arr)), i = Number(item.dataset.i);
-    if (act === "up" && i > 0) [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+    if (act === "top" && i > 0) arr.unshift(arr.splice(i, 1)[0]);
+    else if (act === "bottom" && i < arr.length - 1) arr.push(arr.splice(i, 1)[0]);
+    else if (act === "up" && i > 0) [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
     else if (act === "down" && i < arr.length - 1) [arr[i + 1], arr[i]] = [arr[i], arr[i + 1]];
     else if (act === "del") {
       if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent = "정말 삭제"; setTimeout(() => { b.classList.remove("arm"); b.textContent = "삭제"; }, 3000); return; }
@@ -459,6 +479,34 @@
   });
 
   window.SiteEdit = { clean }; // 시험용: 손대지 않은 내용은 저장해도 그대로여야 함
+  /* 큰 구역(가지): 순서는 order 한 줄, 추가·삭제는 chapters와 order를 함께 */
+  function secAction(b) {
+    const D = S.data, op = b.dataset.sec, id = b.dataset.id;
+    if (op === "add") {
+      const nid = "sec" + Date.now().toString(36);
+      D.chapters.push({ id: nid, en: "New", ko: "새 구역", blurb: "", groups: [{ title: "새 묶음", items: [["", "", "", ""]] }] });
+      const at = D.order.indexOf("images");
+      at < 0 ? D.order.push(nid) : D.order.splice(at, 0, nid);
+      rerender(() => { const s = $("#s-" + nid); if (s) { s.scrollIntoView({ block: "start" }); const f = $("input,textarea", s); if (f) { f.focus(); f.select && f.select(); } } });
+      changed(); return;
+    }
+    const i = D.order.indexOf(id);
+    if (op === "up" || op === "down") {
+      if (i < 0) return;
+      const j = op === "up" ? i - 1 : i + 1;
+      if (j < 0 || j >= D.order.length) return;
+      [D.order[i], D.order[j]] = [D.order[j], D.order[i]];
+      rerender(() => { const s = $("#s-" + id); if (s) s.scrollIntoView({ block: "start" }); });
+      changed(); return;
+    }
+    if (op === "del") {
+      if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent = "정말 이 구역 전체 삭제"; setTimeout(() => { b.classList.remove("arm"); b.textContent = "이 구역 삭제"; }, 3000); return; }
+      D.chapters = D.chapters.filter((c) => c.id !== id);
+      if (i >= 0) D.order.splice(i, 1);
+      rerender(); changed();
+    }
+  }
+
   $("#save").addEventListener("click", save);
   $("#preview").addEventListener("click", () => {
     if (isDirty()) store.set(draftKey(), JSON.stringify({ sha: S.base.sha, at: Date.now(), data: S.data }));

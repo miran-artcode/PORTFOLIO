@@ -106,7 +106,7 @@
   const byOrg = (a, b) => RANK(a) - RANK(b) || a.localeCompare(b, "ko");
   const lectures = (g, gk) => {
     const by = new Map();
-    g.items.map((r, i) => [gk.items[i][1], r]).sort((a, b) => byOrg(a[0], b[0]))
+    g.items.map((r, i) => [(gk && gk.items.length === g.items.length ? gk.items[i] : r)[1], r]).sort((a, b) => byOrg(a[0], b[0]))
       .forEach(([k, r]) => { if (!by.has(k)) by.set(k, []); by.get(k).push(r); });
     return `<div class="lec">${[...by.values()].map((rs) => `
       <div class="lo"><p class="lo-h">${esc(rs[0][1])}</p><ul class="ledger">${rs.map(([aud, , t, s]) =>
@@ -130,7 +130,7 @@
       ${c.groups.map((g, gi) => `
         <div class="group grid">
           <div class="gh"><h3>${esc(g.title)}</h3>${g.note ? `<p class="note">${esc(g.note)}</p>` : ""}<span class="label n">${g.kind === "threads" ? "" : items(g.items.length)}</span></div>
-          <div class="gb">${g.kind === "threads" ? threads(g) : g.kind === "cards" ? cards(g) : g.kind === "lectures" ? lectures(g, KO.chapters[ci].groups[gi]) : `<ul class="ledger">${g.items.map(row).join("")}</ul>`}</div>
+          <div class="gb">${g.kind === "threads" ? threads(g) : g.kind === "cards" ? cards(g) : g.kind === "lectures" ? lectures(g, ((KO.chapters.find((x) => x.id === c.id) || c).groups || [])[gi]) : `<ul class="ledger">${g.items.map(row).join("")}</ul>`}</div>
         </div>`).join("")}
     </section>`;
   $("#chapters").innerHTML = S.chapters.map(chapterHTML).join("");
