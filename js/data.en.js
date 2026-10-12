@@ -48,6 +48,23 @@ window.SITE_EN = {
       ]
     },
     {
+      id: "data-eye",
+      title: "Reading Paintings as Data",
+      en: "Reading Paintings as Data",
+      year: "2024–2025",
+      kind: "Lesson design · Web tool",
+      org: "",
+      pics: [
+        { src: "app-datacanvas.jpg" }
+      ],
+      question: "Does reading a painting as data on color and composition make appreciation shallower or deeper?",
+      text: "In this lesson, students extract the main colors of a famous painting with K-means, analyze its composition, texture and form, and then use the results as rules to remake it as interactive media art. I built a class website so that the work runs from analysis to creation on a single screen. With two computer science teachers from the Dongjak-Gwanak AI Convergence Education working group, I ran an introductory AI special lecture that treated data visualization as a method of art.",
+      made: ["Lesson flow from analysis to creation to sharing (achievement standards [12Art02-01], [12Art02-04])","Class website with color clustering, object detection, audio analysis and an AI appreciation coach","Open class for the Ministry of Education AIEDAP research group, “Data-Based Information Visualization Lesson” (2025.6.18.)"],
+      links: [
+        ["site","Reading Paintings as Data class website","https://lab-datacanvas.web.app"]
+      ]
+    },
+    {
       id: "mind-weather",
       title: "Mind Weather Museum",
       en: "Mind Weather Museum",
@@ -447,7 +464,7 @@ window.SITE_EN = {
             ["2026.6.12.","Seoul Dongjak-Gwanak District Office of Education","Art Lesson Visualizing Social Issues with Data Algorithms","Teacher group open class (Computer Graphics), observed and interviewed by KICE researchers"],
             ["2026","","High School Credit System “Active Classes”","Participant in school program design"],
             ["2025","","Exploring Multiple Identities in the Digital Age: Self-Portrait","→ Teaching Materials “My Self-Portrait in the Digital Age”"],
-            ["2025","","Data-Based Interactive Media Art","2025 AI and EdTech leading teacher lesson case"],
+            ["2025","","Data-Based Interactive Media Art","→ Selected Works “Reading Paintings Through the Eyes of Data”"],
             ["2025.6.18.","Ministry of Education","Data-Based Information Visualization Lesson","Open class of the Ministry of Education AIEDAP master teacher research group, observed by teachers from other provinces"],
             ["2025.12.15.","Seoul Dongjak-Gwanak District Office of Education","Sharing Data-Based Media Art Outcomes Using the DAIR Model","AI Convergence Education subgroup of the teaching and assessment sharing teacher group"],
             ["2024.11.13.","Seoul Dongjak-Gwanak District Office of Education","Art Lesson Improving Visual Literacy through Natural Language Processing","Two open classes in the district: Computer Graphics “AI Convergence Art Lesson for Solving Social Problems”; Media Art analysis of Refik Anadol's work and expression through coding"],
@@ -562,6 +579,7 @@ window.SITE_EN = {
             ["2026","Seoul Education Research & Information Institute","Today's Gaze","Educational software that turns social data into visual rules for expression. Entered in the 20th Digital Education Research Competition; under review","","Web app · public data · private"],
             ["2026","Ministry of Education · KERIS","2nd-Cycle EdTech Project for Solving Current Education Issues","Participating teacher. Wrote the business plan and guide for a field trip platform with Labseed Inc."],
             ["2026","","Data Art Curation Kiosk","Kiosk site for exhibiting work from the STEAM club “Data Art Brush”","","Web app · private"],
+            ["2025","","Reading Paintings through the Eyes of Data","→ Selected Works","https://lab-datacanvas.web.app","Web app · Firebase · machine learning analysis module"],
             ["2025","","Today's Tasks","Web app and desktop widget that pull to-dos from work spreadsheets (runs without installation)","https://seoul-educaion.web.app","React·Vite · Firebase Functions · Electron"],
             ["2025.7.","","Art Insight: AI-Based Emotion Word Cloud","Extracts emotion words from appreciation essays into a word cloud","","Streamlit · KoNLPy · private"],
             ["2025","","Interview Question Search · Individual Counseling Cards for Early Admissions","Small tools for admissions counseling","","Web app · spreadsheet integration · private"]

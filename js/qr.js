@@ -1,4 +1,4 @@
-// tools/make_qr.py와 편집 화면(edit.html)이 만든 파일입니다. 직접 고치지 마세요.
+// tools/make_qr.py가 만든 파일입니다. 직접 고치지 마세요.
 window.QR = {
  "https://20260619-22.netlify.app": "img/qr/514825fa40.svg",
  "https://admission-20260710.web.app": "img/qr/dd928eb5d4.svg",
