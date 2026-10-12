@@ -150,6 +150,25 @@
 
   [hidden] { display: none !important; }
 
+  /* 12칸 그리드 배치 그림 */
+  .pvg { font-size: 12px; color: var(--ink-2); display: inline-flex; gap: 4px; align-items: center; }
+  .gsub { border-top: 1px dashed var(--line); padding-top: 6px; }
+  .gpre { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+  .gpre button { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 3px 10px; font-size: 12px; }
+  .gpre button:hover { border-color: var(--ink); }
+  .gctl { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 8px; }
+  .gctl .f.sm { flex: 0 0 auto; }
+  .gctl select { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 5px; min-width: 5.5em; }
+  .gdiag { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: 18px repeat(calc(var(--rows) - 1), 46px); gap: 4px;
+    background: repeating-linear-gradient(to right, color-mix(in srgb, var(--ink) 6%, transparent) 0 calc((100% - 44px) / 12), transparent calc((100% - 44px) / 12) calc((100% - 44px) / 12 + 4px));
+    padding: 2px 0; max-width: 760px; }
+  .gdiag .gc { grid-row: 1; text-align: center; font: 10px/18px var(--mono); color: var(--ink-3); }
+  .gdiag .gb { display: flex; flex-direction: column; justify-content: center; padding: 0 8px; border-radius: 4px; font-size: 12px; font-weight: 600; min-width: 0; overflow: hidden; white-space: nowrap; }
+  .gdiag .gb small { font-weight: 400; font-size: 10px; opacity: .75; }
+  .gdiag .meta { background: var(--wash); color: var(--ink-2); font-weight: 400; }
+  .gdiag .txt { background: var(--ink); color: var(--bg); }
+  .gdiag .pic { background: repeating-linear-gradient(45deg, var(--wash) 0 6px, var(--bg) 6px 12px); border: 1px solid var(--ink); color: var(--ink); }
+
   @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr; }
     #side { position: static; flex-direction: row; flex-wrap: wrap; gap: 4px 12px; }
@@ -168,6 +187,7 @@
   <div class="find"><input id="q" type="search" placeholder="찾기 (예: 교육부, 2025, 교과서)" aria-label="찾기"><span id="qn"></span></div>
   <span id="state"></span>
   <button type="button" class="btn" data-act="lib" title="사진을 올리거나, 이미 있는 사진의 파일 이름을 복사합니다">사진 보관함</button>
+  <label class="pvg"><input type="checkbox" id="pv-grid"> 그리드 선</label>
   <button type="button" class="btn" id="preview">미리보기</button>
   <button type="button" class="btn primary" id="save" disabled title="Ctrl+S">저장하기</button>
   <button type="button" id="conn">GitHub 연결</button>
@@ -208,7 +228,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="js/serialize.js"></script>
-<script src="js/edit.js"></script>
+<script src="js/serialize.js?v=20261012g"></script>
+<script src="js/edit.js?v=20261012g"></script>
 </body>
 </html>

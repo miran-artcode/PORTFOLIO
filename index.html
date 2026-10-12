@@ -92,7 +92,11 @@
   } catch (e) {}
 })();
 </script>
-<script src="js/qr.js"></script>
-<script src="js/main.js"></script>
+<script src="js/qr.js?v=20261012g"></script>
+<script src="js/main.js?v=20261012g"></script>
+<script>
+/* 편집 화면 미리보기에서 ?grid=1 이면 12칸 그리드 선을 켠 채로 엽니다 */
+if (/[?&]grid=1/.test(location.search)) { var gb = document.getElementById("grid-btn"); if (gb && gb.getAttribute("aria-pressed") !== "true") gb.click(); }
+</script>
 </body>
 </html>

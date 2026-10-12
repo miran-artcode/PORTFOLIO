@@ -23,7 +23,12 @@
   const parseP = (s) => s.split(".").map((k) => (/^\d+$/.test(k) ? Number(k) : k));
   const getAt = (o, path) => path.reduce((a, k) => (a == null ? undefined : a[k]), o);
   function setAt(o, path, v) {
-    const parent = getAt(o, path.slice(0, -1)), last = path[path.length - 1];
+    let cur = o;
+    for (let i = 0; i < path.length - 1; i++) {
+      if (cur[path[i]] == null) cur[path[i]] = typeof path[i + 1] === "number" ? [] : {};
+      cur = cur[path[i]];
+    }
+    const parent = cur, last = path[path.length - 1];
     if (Array.isArray(parent) && typeof last === "number") while (parent.length < last) parent.push("");
     parent[last] = v;
   }
@@ -98,6 +103,42 @@
   const closePicker = () => { $("#picker").hidden = true; pickCb = null; $("#pk-file").value = ""; };
   function picksDone(names) { const cb = pickCb; closePicker(); if (cb && names.length) cb(names); }
 
+  /* ── 12칸 그리드 배치: works[i].grid = { txt: [시작 칸, 너비], pics: [시작 칸, 너비] } ──
+     1–2칸은 연도·종류 자리라 글·사진은 3–12칸 안에서 고릅니다. 넓은 화면에만 쓰고, 좁은 화면은 늘 위아래로 쌓입니다. */
+  const GRID_PRESETS = [
+    ["글 4 · 사진 6 (기본)", null],
+    ["글 5 · 사진 5", { txt: [3, 5], pics: [8, 5] }],
+    ["글 3 · 사진 7", { txt: [3, 3], pics: [6, 7] }],
+    ["사진 왼쪽 5 · 글 5", { txt: [8, 5], pics: [3, 5] }],
+    ["사진 왼쪽 7 · 글 3", { txt: [10, 3], pics: [3, 7] }],
+    ["글 위 7 · 사진 아래 10", { txt: [3, 7], pics: [3, 10] }]
+  ];
+  const DEF_GRID = (w) => w.layout === "left" ? { txt: [8, 5], pics: [3, 5] } : w.layout === "below" ? { txt: [3, 7], pics: [3, 10] } : { txt: [3, 4], pics: [7, 6] };
+  const gridOf = (w) => {
+    const g = w.grid, ok = (a) => Array.isArray(a) && a.length === 2 && a.every((n) => Number.isInteger(n));
+    return g && ok(g.txt) && ok(g.pics) ? g : DEF_GRID(w);
+  };
+  function gridDiag(i) {
+    const w = S.data.works[i], g = gridOf(w), hasPics = (w.pics || []).length > 0;
+    const end = (a) => a[0] + a[1] - 1, overlap = hasPics && !(end(g.txt) < g.pics[0] || end(g.pics) < g.txt[0]);
+    const cell = (n) => `<span class="gc">${n}</span>`;
+    const block = (cls, a, row, label) => `<span class="gb ${cls}" style="grid-column:${a[0]} / span ${a[1]};grid-row:${row}">${label}<small>${a[0]}–${end(a)}칸</small></span>`;
+    const out = end(g.txt) > 12 || (hasPics && end(g.pics) > 12);
+    return `<div class="gdiag" style="--rows:${overlap ? 3 : 2}">${Array.from({ length: 12 }, (_, k) => cell(k + 1)).join("")}
+      <span class="gb meta" style="grid-column:1 / span 2;grid-row:2">연도·종류</span>
+      ${block("txt", g.txt, 2, "글")}${hasPics ? block("pic", g.pics, overlap ? 3 : 2, "사진") : ""}</div>
+      <p class="hint">${out ? "<b>12칸을 넘었습니다.</b> 시작 칸이나 너비를 줄여 주세요." : overlap ? "글과 사진 칸이 겹쳐서 사진이 글 아래 줄로 내려갑니다." : "넓은 화면에서 이렇게 놓입니다. 휴대폰에서는 위아래로 쌓입니다."}</p>`;
+  }
+  function gridHTML(i) {
+    const w = S.data.works[i], g = gridOf(w), b = P(["works", i, "grid"]);
+    const opt = (from, to, v) => Array.from({ length: to - from + 1 }, (_, k) => from + k).map((n) => `<option value="${n}"${n === v ? " selected" : ""}>${n}</option>`).join("");
+    const sel = (key, idx, from, to, label) => `<label class="f sm"><span class="lb">${label}</span><select data-p="${b}.${key}.${idx}" data-t="num" data-grid="${i}">${opt(from, to, g[key][idx])}</select></label>`;
+    return `<div class="sub gsub"><h4>12칸 그리드 배치 <span class="hint">(${w.grid ? "직접 정함 · 아래 사진 위치보다 먼저 적용" : "기본값 · 아래 사진 위치를 따름"})</span></h4>
+      <div class="gpre">${GRID_PRESETS.map(([t, v], k) => `<button type="button" data-act="grid-pre" data-w="${i}" data-k="${k}">${t}</button>`).join("")}</div>
+      <div class="gctl">${sel("txt", 0, 3, 12, "글 시작 칸")}${sel("txt", 1, 1, 10, "글 너비(칸)")}${sel("pics", 0, 3, 12, "사진 시작 칸")}${sel("pics", 1, 1, 10, "사진 너비(칸)")}</div>
+      <div class="gwrap" data-gdiag="${i}">${gridDiag(i)}</div></div>`;
+  }
+
   function picsHTML(i) {
     const w = S.data.works[i], ps = w.pics || [], b = ["works", i];
     const cards = ps.map((m, k) => {
@@ -112,7 +153,7 @@
         <div class="ops"><button type="button" data-act="pic-prev" title="앞으로">← 앞으로</button><button type="button" data-act="pic-next" title="뒤로">뒤로 →</button><button type="button" data-act="pic-swap">바꾸기</button><button type="button" data-act="pic-del">빼기</button></div>
       </div>`;
     }).join("");
-    return `<div class="sub"><h4>사진 (순서대로 보입니다)</h4>
+    return gridHTML(i) + `<div class="sub"><h4>사진 (순서대로 보입니다)</h4>
       <div class="fields">${`<label class="f"><span class="lb">사진 위치</span><select data-p="${P([...b, "layout"])}" data-t="text">${LAYOUTS.map(([v, t]) => `<option value="${v}"${(w.layout || "") === v ? " selected" : ""}>${t}</option>`).join("")}</select></label>`}</div>
       <div class="pics-ed">${cards}<button type="button" class="pic-add" data-act="pic-add" data-w="${i}">+ 사진 추가<small>올리기 · 고르기</small></button></div></div>`;
   }
@@ -368,6 +409,10 @@
         if (!w.pics.length) delete w.pics;
       }
       if (!w.layout) delete w.layout;
+      if (w.grid) {
+        const ok = (a) => Array.isArray(a) && a.length === 2 && a.every((n) => Number.isInteger(n) && n >= 1) && a[0] + a[1] - 1 <= 12;
+        if (!ok(w.grid.txt) || !ok(w.grid.pics)) delete w.grid;
+      }
       if (w.facts && !w.facts.length) delete w.facts;
       if (w.lists && !w.lists.length) delete w.lists;
     });
@@ -419,13 +464,14 @@
     for (const w of r.data.works || []) {
       const mine = (out.works || []).find((x) => x.id === w.id);
       if (!mine) continue;
-      const before = JSON.stringify([w.pics, w.img, w.img2, w.layout]);
+      const before = JSON.stringify([w.pics, w.img, w.img2, w.layout, w.grid]);
       const capOf = Object.fromEntries((w.pics || []).map((m) => [m.src, m.cap]));
       if (mine.pics) w.pics = mine.pics.map((m) => { const o = { src: m.src }; if (capOf[m.src]) o.cap = capOf[m.src]; for (const k of ["ratio", "pos", "wide"]) if (m[k]) o[k] = m[k]; return o; });
       else delete w.pics;
       delete w.img; delete w.img2;
       if (mine.layout) w.layout = mine.layout; else delete w.layout;
-      if (JSON.stringify([w.pics, w.img, w.img2, w.layout]) !== before) n++;
+      if (mine.grid) w.grid = JSON.parse(JSON.stringify(mine.grid)); else delete w.grid;
+      if (JSON.stringify([w.pics, w.img, w.img2, w.layout, w.grid]) !== before) n++;
     }
     return n ? { path: O.path, content: SiteFile.write(r.header, O.v, r.data) } : null;
   }
@@ -546,6 +592,12 @@
       if (el.dataset.t === "num") { const n = Number(v); v = v.trim() !== "" && !isNaN(n) ? n : v; }
       if (el.dataset.t === "bool") v = el.checked;
       setAt(S.data, parseP(el.dataset.p), v);
+      if (el.dataset.grid != null) {
+        const w = S.data.works[Number(el.dataset.grid)];
+        if (!w.grid || !w.grid.txt || !w.grid.pics) { const d = DEF_GRID(w); w.grid = { txt: (w.grid && w.grid.txt) || d.txt, pics: (w.grid && w.grid.pics) || d.pics }; }
+        for (const k of ["txt", "pics"]) w.grid[k] = [Number(w.grid[k][0]) || 3, Number(w.grid[k][1]) || 1];
+        const box = document.querySelector(`[data-gdiag="${el.dataset.grid}"]`); if (box) box.innerHTML = gridDiag(Number(el.dataset.grid));
+      }
       changed();
       // 고르는 칸·사진 이름 칸은 바로 화면(미리 보기 그림)에 반영
       if (el.tagName === "SELECT" || el.dataset.t === "bool") rerender();
@@ -607,6 +659,11 @@
     }
     const act = b.dataset.act;
     if (b.dataset.sec) { secAction(b); return; }
+    if (act === "grid-pre") {
+      const w = S.data.works[Number(b.dataset.w)], v = GRID_PRESETS[Number(b.dataset.k)][1];
+      if (v) w.grid = JSON.parse(JSON.stringify(v)); else delete w.grid;
+      rerender(); changed(); return;
+    }
     if (act === "draft-use") { S.data = S.pendingDraft.data; say(""); rerender(); changed(); return; }
     if (act === "draft-drop") { store.del(draftKey()); say(""); load(S.lang, { dropDraft: true }); return; }
     if (act === "force-save") { S.force = true; say(""); save(); return; }
@@ -697,7 +754,7 @@
   $("#save").addEventListener("click", save);
   $("#preview").addEventListener("click", () => {
     if (isDirty()) store.set(draftKey(), JSON.stringify({ sha: S.base.sha, at: Date.now(), data: S.data }));
-    const qs = [isDirty() ? "draft=1" : "", S.lang === "en" ? "lang=en" : ""].filter(Boolean).join("&");
+    const qs = [isDirty() ? "draft=1" : "", S.lang === "en" ? "lang=en" : "", $("#pv-grid") && $("#pv-grid").checked ? "grid=1" : ""].filter(Boolean).join("&");
     window.open("index.html" + (qs ? "?" + qs : ""), "hm-preview");
   });
   $("#conn").addEventListener("click", () => { if ($("#connect").hidden) openConnect(""); else $("#connect").hidden = true; });

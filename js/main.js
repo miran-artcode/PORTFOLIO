@@ -67,11 +67,15 @@
 
   /* 선별 작업 */
   $("#projects").innerHTML = S.works.map((p) => {
-    const pics = picsOf(p), lay = ["left", "below"].includes(p.layout) ? " pic-" + p.layout : "";
+    const pics = picsOf(p), g = p.grid, okG = (a) => Array.isArray(a) && a.length === 2 && a[0] + a[1] - 1 <= 12;
+    const custom = g && okG(g.txt) && okG(g.pics), endG = (a) => a[0] + a[1] - 1;
+    const sameRow = custom && pics.length && (endG(g.txt) < g.pics[0] || endG(g.pics) < g.txt[0]);
+    const lay = custom ? " custom" + (sameRow ? " same-row" : "") : ["left", "below"].includes(p.layout) ? " pic-" + p.layout : "";
+    const gstyle = custom ? ` style="--txt-c:${g.txt[0]} / span ${g.txt[1]};--pic-c:${g.pics[0]} / span ${g.pics[1]}"` : "";
     const facts = p.facts ? `<dl class="facts">${p.facts.map((f) => `<div><dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd></div>`).join("")}</dl>` : "";
     const lists = p.lists ? p.lists.map((l) => `<div class="sub"><span class="label">${esc(l.title)}</span><ul class="made">${l.items.map((m) => `<li>${esc(m)}</li>`).join("")}</ul></div>`).join("") : "";
     return `
-    <article class="proj grid${pics.length ? lay : " no-img"}" id="${p.id}">
+    <article class="proj grid${pics.length ? lay : " no-img" + (custom ? " custom" : "")}" id="${p.id}"${gstyle}>
       <div class="meta"><span class="label">${esc(p.year)}</span><span class="label k">${esc(p.kind)}</span></div>
       <div class="txt">
         ${p.org ? `<p class="org">${esc(p.org)}</p>` : ""}

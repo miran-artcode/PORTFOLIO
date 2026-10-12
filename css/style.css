@@ -356,3 +356,10 @@ a.ul:hover { border-color: var(--ink); }
 .pill.lang span { color: var(--ink-3); }
 .pill.lang span.cur { color: var(--ink); font-weight: 600; }
 .pill.lang span + span::before { content: "/"; margin-right: 6px; color: var(--line); font-weight: 400; }
+
+/* 선별 작업 12칸 배치(편집 화면에서 정함): 넓은 화면에서만, 좁은 화면은 늘 위아래로 */
+@media (min-width: 1101px) {
+  .proj.custom .txt { grid-column: var(--txt-c); grid-row: 1; }
+  .proj.custom .pics { grid-column: var(--pic-c); }
+  .proj.custom.same-row .pics { grid-row: 1; }
+}
