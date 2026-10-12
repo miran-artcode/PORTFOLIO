@@ -52,7 +52,10 @@
   S.recent = {};    // 방금 저장한 새 사진(공개 사이트에 올라오기 전까지 화면에 보이게)
   const keepUploads = () => { if (!store.set("hm-uploads", JSON.stringify(S.uploads))) say("새 사진이 많아 이 브라우저 보관함이 찼습니다. 지금 한 번 <b>저장하기</b>를 누르면 비워집니다. (미리보기에서는 일부 새 사진이 안 보일 수 있습니다)", "warn"); };
   const imgSrc = (f) => (f ? S.uploads[f] || S.recent[f] || "img/" + f : "");
-  const RATIOS = [["", "원래 비율"], ["4/3", "가로 4:3"], ["16/9", "가로 16:9"], ["1/1", "정사각형"], ["3/4", "세로 3:4"]];
+  // 사진 크기는 그리드 칸 수로: 가로 cols칸 × 세로 rows칸(세로 1칸 = 칸 너비). main.js의 picCols·picAR과 같은 셈
+  const picCols = (m, N, free, fixed = 0) => Math.min(N, m.cols || (m.wide ? N : free <= 1 ? (N - fixed >= 1 ? N - fixed : N) : Math.max(1, Math.floor(N / 2))));
+  const fixedCols = (pics, N) => Math.min(N, pics.reduce((s, m) => s + (m.cols ? Math.min(N, m.cols) : 0), 0)) % N;
+  const picAR = (k, r) => (k * 5 + k - 1) / (r * 5 + r - 1);
   const LAYOUTS = [["", "글 오른쪽 (기본)"], ["left", "글 왼쪽"], ["below", "글 아래에 넓게"]];
   async function loadImgList(force) {
     if (S.imgList && !force) return S.imgList;
@@ -141,15 +144,23 @@
 
   function picsHTML(i) {
     const w = S.data.works[i], ps = w.pics || [], b = ["works", i];
+    const N = gridOf(w).pics[1], free = ps.filter((m) => !m.cols && !m.wide).length, fixed = fixedCols(ps, N);
     const cards = ps.map((m, k) => {
       const p = P([...b, "pics", k]), pos = (m.pos || "50% 50%").split(" ");
+      const kc = picCols(m, N, free, fixed), r = m.rows, crop = !!(r || m.ratio), ar = r ? picAR(kc, r) : null;
+      const opts = (from, to, v, first, lab) => `<option value=""${!v ? " selected" : ""}>${first}</option>` + Array.from({ length: to - from + 1 }, (_, j) => from + j).map((n) => `<option value="${n}"${n === v ? " selected" : ""}>${lab(n)}</option>`).join("");
+      // 칸 모양 그림: 사진 영역 N칸 중 몇 칸을 쓰는지
+      const cells = Array.from({ length: N }, (_, j) => `<span${j < kc ? ' class="on"' : ""}></span>`).join("");
       return `<div class="pic" data-w="${i}" data-k="${k}">
-        <div class="thumb${m.ratio ? " crop" : ""}" style="${m.ratio ? `aspect-ratio:${m.ratio}` : ""}"><img src="${esc(imgSrc(m.src))}" alt="" style="${m.ratio ? `object-fit:cover;object-position:${esc(m.pos || "50% 50%")}` : ""}">${m.ratio ? `<i class="dot" style="left:${esc(pos[0])};top:${esc(pos[1] || "50%")}"></i>` : ""}</div>
+        <div class="thumb${crop ? " crop" : ""}" style="${ar ? `aspect-ratio:${ar.toFixed(4)}` : m.ratio ? `aspect-ratio:${m.ratio}` : ""}"><img src="${esc(imgSrc(m.src))}" alt="" style="${crop ? `object-fit:cover;object-position:${esc(m.pos || "50% 50%")}` : ""}">${crop ? `<i class="dot" style="left:${esc(pos[0])};top:${esc(pos[1] || "50%")}"></i>` : ""}</div>
         <div class="pic-name">${S.uploads[m.src] ? "<b>새 사진</b> · " : ""}${esc(m.src)}</div>
-        <label class="f"><span class="lb">보이는 비율</span><select data-p="${p}.ratio" data-t="text">${RATIOS.map(([v, t]) => `<option value="${v}"${(m.ratio || "") === v ? " selected" : ""}>${t}</option>`).join("")}</select></label>
-        <p class="hint">${m.ratio ? "사진을 누르면 그 부분이 가운데 오도록 맞춥니다." : "비율을 고르면 잘리는 위치를 정할 수 있습니다."}</p>
+        <div class="pcells" style="--n:${N}" title="사진 영역 ${N}칸 중 ${kc}칸">${cells}</div>
+        <div class="pgrid">
+          <label class="f sm"><span class="lb">가로 칸</span><select data-p="${p}.cols" data-t="num">${opts(1, N, m.cols, `자동 (${m.cols ? picCols({ wide: m.wide }, N, free + 1, fixed - m.cols) : kc}칸)`, (n) => n === N ? `${n}칸 (한 줄 전체)` : `${n}칸`)}</select></label>
+          <label class="f sm"><span class="lb">세로 칸</span><select data-p="${p}.rows" data-t="num">${opts(1, Math.max(12, N * 2), r, "원래 비율", (n) => `${n}칸`)}</select></label>
+        </div>
+        <p class="hint">${r ? `<b>${kc}×${r}칸</b>으로 그리드 선에 맞춥니다. 사진을 누르면 그 부분이 가운데 오도록 맞춥니다.` : `지금 가로 ${kc}칸, 세로는 사진 원래 비율. 세로 칸을 고르면 위아래도 그리드 칸에 맞춰 자릅니다.`}</p>
         ${fld([...b, "pics", k, "cap"], C("사진 설명 (없으면 비움)", "cap", "l"))}
-        <label class="chk"><input type="checkbox" data-p="${p}.wide" data-t="bool"${m.wide ? " checked" : ""}> 한 줄 전체로 크게</label>
         <div class="ops"><button type="button" data-act="pic-prev" title="앞으로">← 앞으로</button><button type="button" data-act="pic-next" title="뒤로">뒤로 →</button><button type="button" data-act="pic-swap">바꾸기</button><button type="button" data-act="pic-del">빼기</button></div>
       </div>`;
     }).join("");
@@ -402,8 +413,10 @@
         w.pics = w.pics.filter((m) => m && m.src && String(m.src).trim()).map((m) => {
           const o = { src: String(m.src).trim() };
           for (const k of ["cap", "ratio", "pos"]) if (m[k] && String(m[k]).trim()) o[k] = String(m[k]).trim();
-          if (m.wide) o.wide = true;
-          if (!o.ratio) delete o.pos;
+          for (const k of ["cols", "rows"]) if (Number.isInteger(m[k]) && m[k] > 0) o[k] = m[k];
+          if (m.wide && !o.cols) o.wide = true;
+          if (o.rows) delete o.ratio; // 그리드 칸이 정해지면 예전 비율은 버림
+          if (!o.ratio && !o.rows) delete o.pos;
           return o;
         });
         if (!w.pics.length) delete w.pics;
@@ -466,7 +479,7 @@
       if (!mine) continue;
       const before = JSON.stringify([w.pics, w.img, w.img2, w.layout, w.grid]);
       const capOf = Object.fromEntries((w.pics || []).map((m) => [m.src, m.cap]));
-      if (mine.pics) w.pics = mine.pics.map((m) => { const o = { src: m.src }; if (capOf[m.src]) o.cap = capOf[m.src]; for (const k of ["ratio", "pos", "wide"]) if (m[k]) o[k] = m[k]; return o; });
+      if (mine.pics) w.pics = mine.pics.map((m) => { const o = { src: m.src }; if (capOf[m.src]) o.cap = capOf[m.src]; for (const k of ["cols", "rows", "ratio", "pos", "wide"]) if (m[k]) o[k] = m[k]; return o; });
       else delete w.pics;
       delete w.img; delete w.img2;
       if (mine.layout) w.layout = mine.layout; else delete w.layout;

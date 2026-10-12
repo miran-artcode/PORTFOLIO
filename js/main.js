@@ -21,9 +21,14 @@
   /* 편집 화면 미리보기(?draft)에서는 아직 저장하지 않은 새 사진을 이 브라우저 보관함에서 꺼내 씁니다 */
   const UPL = (() => { if (!/[?&]draft\b/.test(location.search)) return {}; try { return JSON.parse(localStorage.getItem("hm-uploads") || "{}"); } catch (e) { return {}; } })();
   const IMG = (f) => UPL[f] || "img/" + f;
-  /* 선별 작업 사진: pics [{ src, cap, ratio, pos, wide }] — 예전 img·img2도 읽음 */
+  /* 선별 작업 사진: pics [{ src, cap, cols, rows, pos }] — cols·rows는 그리드 칸 수(세로 1칸 = 칸 너비).
+     예전 img·img2·wide·ratio도 읽음 */
   const picsOf = (p) => (p.pics || [p.img, p.img2]).filter(Boolean).map((m) => (typeof m === "string" ? { src: m } : m)).filter((m) => m.src);
-  const picStyle = (m) => (m.ratio ? `aspect-ratio:${m.ratio};object-fit:cover;` : "") + (m.pos ? `object-position:${m.pos};` : "");
+  // 자동 칸: 혼자면 남은 칸(다른 사진이 정한 칸을 뺀 나머지), 여럿이면 절반씩
+  const picCols = (m, N, free, fixed = 0) => Math.min(N, m.cols || (m.wide ? N : free <= 1 ? (N - fixed >= 1 ? N - fixed : N) : Math.max(1, Math.floor(N / 2))));
+  const fixedCols = (pics, N) => Math.min(N, pics.reduce((s, m) => s + (m.cols ? Math.min(N, m.cols) : 0), 0)) % N;
+  const CW = 5; // 칸 너비 : 사이 간격 (좁은 화면에서 비율을 셈할 때)
+  const picAR = (k, r) => (k * CW + k - 1) / (r * CW + r - 1);
   const host = (u) => u.replace(/^https?:\/\//, "").replace(/\/$/, "");
   const ext = (u, t) => `<a class="ul" href="${u}" target="_blank" rel="noopener">${esc(t)} ↗</a>`;
   const items = (n) => `<i>${n}</i> ${n === 1 ? "item" : "items"}`;
@@ -72,6 +77,14 @@
     const sameRow = custom && pics.length && (endG(g.txt) < g.pics[0] || endG(g.pics) < g.txt[0]);
     const lay = custom ? " custom" + (sameRow ? " same-row" : "") : ["left", "below"].includes(p.layout) ? " pic-" + p.layout : "";
     const gstyle = custom ? ` style="--txt-c:${g.txt[0]} / span ${g.txt[1]};--pic-c:${g.pics[0]} / span ${g.pics[1]}"` : "";
+    const N = custom ? g.pics[1] : p.layout === "left" ? 5 : p.layout === "below" ? 10 : 6, free = pics.filter((m) => !m.cols && !m.wide).length, fixed = fixedCols(pics, N);
+    const fig = (m) => {
+      const k = picCols(m, N, free, fixed), r = m.rows, st = [`--k:${k}`], ist = [];
+      if (r) st.push(`--r:${r}`, `--ar:${picAR(k, r).toFixed(4)}`);
+      else if (m.ratio) ist.push(`aspect-ratio:${m.ratio}`, "object-fit:cover");
+      if (m.pos && (r || m.ratio)) ist.push(`object-position:${m.pos}`);
+      return `<figure style="${st.join(";")}"${k >= N ? ' class="wide"' : ""}><img loading="lazy" src="${IMG(m.src)}" alt="${esc(m.cap || p.title)}"${r ? ' class="g"' : ""}${ist.length ? ` style="${ist.join(";")}"` : ""}>${m.cap ? `<figcaption>${esc(m.cap)}</figcaption>` : ""}</figure>`;
+    };
     const facts = p.facts ? `<dl class="facts">${p.facts.map((f) => `<div><dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd></div>`).join("")}</dl>` : "";
     const lists = p.lists ? p.lists.map((l) => `<div class="sub"><span class="label">${esc(l.title)}</span><ul class="made">${l.items.map((m) => `<li>${esc(m)}</li>`).join("")}</ul></div>`).join("") : "";
     return `
@@ -88,7 +101,7 @@
         ${p.facts ? "" : `<ul class="made">${p.made.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>`}
         ${p.links ? linkBlock(p.links) : ""}
       </div>
-      ${pics.length ? `<div class="pics n${Math.min(pics.length, 3)}">${pics.map((m) => `<figure${m.wide ? ' class="wide"' : ""}><img loading="lazy" src="${IMG(m.src)}" alt="${esc(m.cap || p.title)}"${picStyle(m) ? ` style="${picStyle(m)}"` : ""}>${m.cap ? `<figcaption>${esc(m.cap)}</figcaption>` : ""}</figure>`).join("")}</div>` : ""}
+      ${pics.length ? `<div class="pics n${Math.min(pics.length, 3)}">${pics.map(fig).join("")}</div>` : ""}
     </article>`;
   }).join("");
 

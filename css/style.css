@@ -357,6 +357,17 @@ a.ul:hover { border-color: var(--ink); }
 .pill.lang span.cur { color: var(--ink); font-weight: 600; }
 .pill.lang span + span::before { content: "/"; margin-right: 6px; color: var(--line); font-weight: 400; }
 
+/* 사진을 그리드 칸에 맞춤: 가로는 칸 수(--k), 세로는 칸 너비를 한 칸으로 센 수(--r).
+   넓은 화면은 사진 칸이 사이트 12칸 선에 그대로 올라가고, 좁은 화면은 같은 비율(--ar)로 줄어듭니다. */
+:root { --cw: calc((100cqw - (var(--cols) - 1) * var(--gutter)) / var(--cols)); }
+.proj .pics img.g { width: 100%; aspect-ratio: var(--ar); object-fit: cover; }
+@media (min-width: 1101px) {
+  .proj { container-type: inline-size; }
+  .proj .pics, .proj .pics.n2, .proj .pics.n3, .proj.pic-below .pics.n3 { grid-template-columns: subgrid; column-gap: var(--gutter); row-gap: var(--gutter); }
+  .proj .pics figure, .proj .pics figure.wide { grid-column: span var(--k, 1); }
+  .proj .pics img.g { aspect-ratio: auto; height: calc(var(--r) * var(--cw) + (var(--r) - 1) * var(--gutter)); }
+}
+
 /* 선별 작업 12칸 배치(편집 화면에서 정함): 넓은 화면에서만, 좁은 화면은 늘 위아래로 */
 @media (min-width: 1101px) {
   .proj.custom .txt { grid-column: var(--txt-c); grid-row: 1; }

@@ -121,6 +121,11 @@
   select[data-p] { font: inherit; color: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); max-width: 100%; }
   .chk input[data-p] { width: auto; margin: 0; }
   .dot { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px var(--ink); pointer-events: none; }
+  .pcells { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 2px; }
+  .pcells span { height: 8px; border: 1px solid var(--line); border-radius: 1px; }
+  .pcells span.on { background: var(--ink); border-color: var(--ink); }
+  .pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .pgrid select { width: 100%; }
   .pic-name { font: 11px/1.4 var(--mono); color: var(--ink-2); word-break: break-all; }
   .chk { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-2); }
   .pic-add { min-height: 140px; border: 1px dashed var(--ink-3); border-radius: 8px; background: none; color: var(--ink); font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
@@ -228,7 +233,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="js/serialize.js?v=20261012g"></script>
-<script src="js/edit.js?v=20261012g"></script>
+<script src="js/serialize.js?v=20261012h"></script>
+<script src="js/edit.js?v=20261012h"></script>
 </body>
 </html>
