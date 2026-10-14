@@ -13,8 +13,8 @@
   function start(lang) {
   const KO = window.SITE, S = lang === "en" ? window.SITE_EN : KO;
   const T = {
-    ko: { all: "전체", aud: "대상", copied: "이메일 주소를 복사했습니다", selected: "주소를 선택했습니다", copy: "눌러서 주소 복사", kind: { site: "사이트", doc: "자료", article: "기사" }, qr: "QR 코드", hero: "소개", nav: "구역" },
-    en: { all: "All", aud: "Audience", copied: "Email address copied", selected: "Address selected", copy: "Click to copy the address", kind: { site: "Site", doc: "Document", article: "Article" }, qr: "QR code", hero: "Introduction", nav: "Sections" }
+    ko: { all: "전체", aud: "대상", copied: "이메일 주소를 복사했습니다", selected: "주소를 선택했습니다", copy: "눌러서 주소 복사", kind: { site: "사이트", doc: "자료", article: "기사" }, qr: "QR 코드", hero: "소개", nav: "구역", toc: "목차", open: "펼치기", contact: "연락" },
+    en: { all: "All", aud: "Audience", copied: "Email address copied", selected: "Address selected", copy: "Click to copy the address", kind: { site: "Site", doc: "Document", article: "Article" }, qr: "QR code", hero: "Introduction", nav: "Sections", toc: "Contents", open: "Expand", contact: "Contact" }
   }[lang];
   const $ = (s, r = document) => r.querySelector(s);
   const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -37,6 +37,7 @@
   if (lang === "en") document.title = "Hwang Miran";
   $(".hero").setAttribute("aria-label", T.hero);
   $("#nav").setAttribute("aria-label", T.nav);
+  $("#side-nav").setAttribute("aria-label", T.toc);
 
   /* 소개 */
   $("#lead").textContent = S.intro.lead;
@@ -150,7 +151,7 @@
         ${c.filter ? `<div class="filt" role="group" aria-label="${T.aud}">${[T.all, ...c.filter].map((f, i) => `<button class="pill" type="button" data-f="${i ? esc(f) : ""}" aria-pressed="${!i}">${esc(f)}</button>`).join("")}</div>` : ""}
       </div>
       ${c.groups.map((g, gi) => `
-        <div class="group grid">
+        <div class="group grid" id="${c.id}-g${gi + 1}">
           <div class="gh"><h3>${esc(g.title)}</h3>${g.note ? `<p class="note">${esc(g.note)}</p>` : ""}<span class="label n">${g.kind === "threads" ? "" : items(g.items.length)}</span></div>
           <div class="gb">${g.kind === "threads" ? threads(g) : g.kind === "cards" ? cards(g) : g.kind === "lectures" ? lectures(g, ((KO.chapters.find((x) => x.id === c.id) || c).groups || [])[gi]) : `<ul class="ledger">${g.items.map(row).join("")}</ul>`}</div>
         </div>`).join("")}
@@ -172,12 +173,31 @@
       if (!g.querySelector("[data-aud]")) return;
       const n = g.querySelectorAll("[data-aud]:not([hidden])").length;
       g.hidden = !n; $(".gh .n", g).innerHTML = items(n);
+      const sl = $(`#side-nav a[href="#${g.id}"]`); if (sl) { sl.parentElement.hidden = !n; $(".c", sl).textContent = n; }
     });
   }));
   document.querySelectorAll(".threads").forEach((th) => {
     const tip = th.parentElement.nextElementSibling;
     const show = (e) => { const b = e.target.closest(".tg-bar"); if (b) tip.textContent = b.dataset.tip; };
     th.addEventListener("mouseover", show); th.addEventListener("focusin", show); th.addEventListener("click", show);
+  });
+
+  /* 목차(넓은 화면): 구역 › 묶음. 지금 구역만 펼치고, 나머지는 +로 직접 펼칩니다 */
+  const TOC = [...KO.order, "contact"].map((id) => {
+    const c = S.chapters.find((x) => x.id === id);
+    if (c) return { id, t: lang === "ko" ? c.ko : c.en, en: lang === "ko" ? c.en : "", subs: c.groups.map((g, gi) => ({ id: `${id}-g${gi + 1}`, t: g.title, n: g.kind === "threads" ? "" : g.items.length })) };
+    if (id === "works") return { id, t: S.heads.works.title, en: lang === "ko" ? "Selected Works" : "", subs: S.works.map((p) => ({ id: p.id, t: p.title, n: "" })) };
+    if (id === "images") return { id, t: S.heads.images.title, en: lang === "ko" ? "Images" : "", subs: [] };
+    return { id, t: T.contact, en: lang === "ko" ? "Contact" : "", subs: [] };
+  }).filter((x) => x.id === "contact" || document.getElementById(x.id));
+  $("#side-nav").innerHTML = `<ol class="t1">${TOC.map((x, i) => `
+    <li class="n1" data-id="${x.id}">
+      <div class="r1"><a class="l1" href="#${x.id}"><span class="no">${String(i + 1).padStart(2, "0")}</span><span class="t">${esc(x.t)}</span>${x.en ? `<span class="label">${esc(x.en)}</span>` : ""}</a>${x.subs.length ? `<button class="tg" type="button" aria-expanded="false" aria-label="${esc(x.t)} ${T.open}"></button>` : ""}</div>
+      ${x.subs.length ? `<ol class="t2">${x.subs.map((y) => `<li><a class="l2" href="#${y.id}" title="${esc(y.t)}"><span class="t">${esc(y.t)}</span><span class="c">${y.n}</span></a></li>`).join("")}</ol>` : ""}
+    </li>`).join("")}</ol>`;
+  $("#side-nav").addEventListener("click", (e) => {
+    const b = e.target.closest(".tg"); if (!b) return;
+    const li = b.closest(".n1"); li.classList.toggle("pin"); b.setAttribute("aria-expanded", li.classList.contains("pin") || li.classList.contains("cur"));
   });
 
   /* 이미지 */
@@ -218,9 +238,35 @@
     if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
     if (on && nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: a.offsetLeft - 16, behavior: "smooth" });
   });
-  const io = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) mark(en.target.id); }), { rootMargin: "-30% 0px -65% 0px" });
+  /* 목차: 지금 구역과 그 안의 묶음을 켜고, 머리줄에 「구역 / 묶음」으로 적습니다 */
+  const side = $("#side-nav"), crumb = $("#crumb"), subsIn = new Set();
+  let curSec = "";
+  const markSide = () => {
+    const sec = TOC.find((x) => x.id === curSec), sub = sec && sec.subs.find((y) => subsIn.has(y.id));
+    side.querySelectorAll(".n1").forEach((li) => {
+      const on = li.dataset.id === curSec, b = $(".tg", li);
+      li.classList.toggle("cur", on);
+      $(".l1", li).toggleAttribute("aria-current", on);
+      if (b) b.setAttribute("aria-expanded", on || li.classList.contains("pin"));
+    });
+    side.querySelectorAll(".l2").forEach((a) => { const on = !!sub && a.getAttribute("href") === "#" + sub.id; a.classList.toggle("on", on); a.toggleAttribute("aria-current", on); });
+    crumb.innerHTML = sec ? `<span class="c1">${esc(sec.t)}</span>${sub ? `<span class="c2">${esc(sub.t)}</span>` : ""}` : "";
+    const a = $(".l2.on", side) || $(".n1.cur .l1", side);
+    if (a && side.clientHeight) {
+      const r = a.getBoundingClientRect(), box = side.getBoundingClientRect();
+      if (r.top < box.top + 24 || r.bottom > box.bottom - 24) side.scrollTo({ top: side.scrollTop + r.top - box.top - side.clientHeight / 3, behavior: "smooth" });
+    }
+  };
+  const setSec = (id) => { if (id === curSec) return; curSec = id; mark(id); markSide(); };
+  const band = { rootMargin: "-30% 0px -65% 0px" };
+  const io = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) setSec(en.target.id); }), band);
   document.querySelectorAll("main section.sec[id]").forEach((s) => io.observe(s));
-  addEventListener("scroll", () => { if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) mark("contact"); }, { passive: true });
+  const io2 = new IntersectionObserver((ents) => { ents.forEach((en) => subsIn[en.isIntersecting ? "add" : "delete"](en.target.id)); markSide(); }, band);
+  document.querySelectorAll("main .group[id], main .proj[id]").forEach((g) => io2.observe(g));
+  addEventListener("scroll", () => {
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) setSec("contact");
+    else if (curSec && curSec === TOC[0].id && $("#" + curSec).getBoundingClientRect().top > innerHeight * .35) setSec("");
+  }, { passive: true });
 
   const toast = $("#toast");
   const say = (t) => { toast.textContent = t; toast.classList.add("on"); setTimeout(() => toast.classList.remove("on"), 1800); };

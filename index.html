@@ -13,16 +13,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="css/style.css?v=20261012h">
+<link rel="stylesheet" href="css/style.css?v=20261014a">
 </head>
 <body>
 
 <div class="overlay" id="overlay" hidden aria-hidden="true"><div class="grid"></div></div>
 
+<!-- 넓은 화면(1280px 이상)에서만 보이는 목차: 구역 › 묶음 두 단계 -->
+<aside class="side" id="side">
+  <a class="side-who" href="#top">황미란 <span class="label">Hwang Miran</span></a>
+  <nav class="side-nav" id="side-nav" aria-label="목차"></nav>
+</aside>
+
 <header class="top">
   <div class="wrap grid">
     <a class="who" href="#top">황미란 <span class="label">Hwang Miran</span></a>
     <nav id="nav" aria-label="구역"></nav>
+    <p class="crumb" id="crumb" aria-hidden="true"></p>
     <div class="tools">
       <button class="pill lang" id="lang-btn" type="button"></button>
       <button class="pill grid-btn" id="grid-btn" type="button" aria-pressed="false" title="12단 그리드 보기 (G)">Grid</button>
@@ -92,8 +99,8 @@
   } catch (e) {}
 })();
 </script>
-<script src="js/qr.js?v=20261012h"></script>
-<script src="js/main.js?v=20261012h"></script>
+<script src="js/qr.js?v=20261014a"></script>
+<script src="js/main.js?v=20261014a"></script>
 <script>
 /* 편집 화면 미리보기에서 ?grid=1 이면 12칸 그리드 선을 켠 채로 엽니다 */
 if (/[?&]grid=1/.test(location.search)) { var gb = document.getElementById("grid-btn"); if (gb && gb.getAttribute("aria-pressed") !== "true") gb.click(); }

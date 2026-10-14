@@ -374,3 +374,50 @@ a.ul:hover { border-color: var(--ink); }
   .proj.custom .pics { grid-column: var(--pic-c); }
   .proj.custom.same-row .pics { grid-row: 1; }
 }
+
+/* ── 목차 사이드바 (1280px 이상): 구역 › 묶음 두 단계 (2026.10.14.) ──
+   1단계는 번호·굵은 이름·영문 이름, 2단계는 들여 쓴 세로선 위의 가는 글자와 개수.
+   지금 구역만 펼치고, 지금 묶음은 세로선 위에 굵은 막대로 짚습니다. */
+.side, .crumb { display: none; }
+@media (min-width: 1280px) {
+  :root { --side: clamp(232px, 17vw, 296px); }
+  body { padding-left: var(--side); }
+  .overlay { left: var(--side); }
+  .top .who, .top nav { display: none; }
+  .crumb { grid-column: 1 / span 10; align-self: center; display: flex; align-items: baseline; gap: .6em; min-width: 0; margin: 0; font: 500 var(--t-sm)/1.3 var(--f-sans); letter-spacing: -.01em; white-space: nowrap; }
+  .crumb .c1 { color: var(--ink-2); flex: none; }
+  .crumb .c2 { color: var(--ink); overflow: hidden; text-overflow: ellipsis; }
+  .crumb .c2::before { content: "/"; margin-right: .6em; color: var(--ink-3); font-weight: 400; }
+
+  .side { display: flex; flex-direction: column; position: fixed; inset: 0 auto 0 0; width: var(--side); z-index: 55; background: var(--bg); border-right: 1px solid var(--line); }
+  .side-who { flex: none; display: flex; flex-wrap: wrap; align-content: center; gap: 0 .6em; min-height: var(--head-h); padding: env(safe-area-inset-top, 0px) 20px 0 var(--margin); border-bottom: 1px solid var(--line); font-weight: 600; font-size: var(--t-sm); }
+  .side-who .label { color: var(--ink-3); }
+  .side-nav { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 20px 16px 40px var(--margin); }
+  .side ol { list-style: none; margin: 0; padding: 0; }
+
+  /* 1단계: 구역 */
+  .n1 { border-top: 1px solid var(--line); }
+  .n1:first-child { border-top-color: transparent; }
+  .n1.cur { border-top-color: var(--ink); }
+  .r1 { display: flex; align-items: flex-start; }
+  .l1 { flex: 1; min-width: 0; display: grid; grid-template-columns: 2.4em minmax(0, 1fr); padding: 10px 0 9px; color: var(--ink-2); }
+  .l1 .no { grid-row: 1 / span 2; font: var(--t-xs)/1.9 var(--f-mono); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .l1 .t { font: 600 15px/1.35 var(--f-sans); letter-spacing: -.03em; }
+  .l1 .label { grid-column: 2; color: var(--ink-3); }
+  .l1:hover, .n1.cur .l1, .n1.cur .l1 .no { color: var(--ink); }
+  .tg { flex: none; width: 28px; height: 38px; margin-right: -6px; border: 0; padding: 0; background: none; color: var(--ink-3); cursor: pointer; font: 300 16px/1 var(--f-mono); }
+  .tg::before { content: "+"; }
+  .tg[aria-expanded="true"]::before { content: "−"; }
+  .tg:hover { color: var(--ink); }
+
+  /* 2단계: 묶음 */
+  .t2 { display: none; margin: 0 0 14px 2.4em !important; border-left: 1px solid var(--line); }
+  .n1.cur .t2, .n1.pin .t2 { display: block; }
+  .l2 { position: relative; display: flex; align-items: baseline; gap: 10px; padding: 4px 0 4px 12px; font-size: var(--t-sm); line-height: 1.45; color: var(--ink-2); }
+  .l2 .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .l2 .c { flex: none; font: var(--t-xs)/1 var(--f-mono); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .l2:hover { color: var(--ink); }
+  .l2.on { color: var(--ink); font-weight: 600; }
+  .l2.on::before { content: ""; position: absolute; left: -1px; top: 3px; bottom: 3px; width: 2px; background: var(--ink); }
+}
+@media print { body { padding-left: 0 !important; } .side, .crumb { display: none !important; } }
